@@ -14,7 +14,7 @@ import UpdatePost from './pages/UpdatePost';
 import PostPage from './pages/PostPage';
 import ScrollToTop from './components/ScrollToTop';
 import Search from './pages/Search';
-
+import UpdateFacture from './pages/Facturation/updateFacture';
 export default function App() {
   return (
     <BrowserRouter>
@@ -36,6 +36,7 @@ export default function App() {
 
         <Route path='/projects' element={<Projects />} />
         <Route path='/post/:postSlug' element={<PostPage />} />
+        <Route path="/updateFacture/:id" component={UpdateFacture} />
       </Routes>
       <Footer />
     </BrowserRouter>

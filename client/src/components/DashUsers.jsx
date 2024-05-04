@@ -13,7 +13,17 @@ export default function DashUsers() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`/api/user/getusers`);
+        const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+        console.log(token);
+        if (!token) {
+          throw new Error('Token not found');
+        }
+    
+        const res = await fetch('http://localhost:3000/api/user/getusers?limit=5', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await res.json();
         if (res.ok) {
           setUsers(data.users);

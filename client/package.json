@@ -10,20 +10,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.11",
+    "@fullcalendar/interaction": "^6.1.11",
+    "@fullcalendar/react": "^6.1.11",
+    "@fullcalendar/timegrid": "^6.1.11",
     "@reduxjs/toolkit": "^2.0.1",
     "axios": "^1.6.8",
     "firebase": "^10.7.1",
     "flowbite-react": "^0.7.0",
     "moment": "^2.29.4",
     "react": "^18.2.0",
+    "react-big-calendar": "^1.12.0",
     "react-circular-progressbar": "^2.1.0",
+    "react-datepicker": "^6.9.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
     "react-leaflet": "^4.2.1",
     "react-quill": "^2.0.0",
     "react-redux": "^9.0.1",
     "react-router-dom": "^6.20.0",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "rsuite": "^5.60.0"
   },
   "devDependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",

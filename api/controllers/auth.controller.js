@@ -3,17 +3,11 @@ import bcryptjs from 'bcryptjs';
 import { errorHandler } from '../utils/error.js';
 import jwt from 'jsonwebtoken';
 
+// Sign up a new user
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  if (
-    !username ||
-    !email ||
-    !password ||
-    username === '' ||
-    email === '' ||
-    password === ''
-  ) {
+  if (!username || !email || !password || username === '' || email === '' || password === '') {
     next(errorHandler(400, 'All fields are required'));
   }
 
@@ -33,40 +27,37 @@ export const signup = async (req, res, next) => {
   }
 };
 
+// Sign in an existing user
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password || email === '' || password === '') {
-    next(errorHandler(400, 'All fields are required'));
+    return next(errorHandler(400, 'All fields are required'));
   }
 
   try {
-    const validUser = await User.findOne({ email });
-    if (!validUser) {
-      return next(errorHandler(404, 'User not found'));
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
-    const validPassword = bcryptjs.compareSync(password, validUser.password);
-    if (!validPassword) {
-      return next(errorHandler(400, 'Invalid password'));
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Mot de passe incorrect.' });
     }
-    const token = jwt.sign(
-      { id: validUser._id, isAdmin: validUser.isAdmin },
-      process.env.JWT_SECRET
-    );
 
-    const { password: pass, ...rest } = validUser._doc;
+    const isAdmin = user.isAdmin;
 
-    res
-      .status(200)
-      .cookie('access_token', token, {
-        httpOnly: true,
-      })
-      .json(rest);
+    const token = jwt.sign({ userId: user._id, isAdmin }, 'abc123', { expiresIn: '100d' });
+
+    res.status(200).json({ token, isAdmin });
+    console.log(token);
   } catch (error) {
     next(error);
   }
 };
 
+// Sign in with Google OAuth
 export const google = async (req, res, next) => {
   const { email, name, googlePhotoUrl } = req.body;
   try {
@@ -74,15 +65,10 @@ export const google = async (req, res, next) => {
     if (user) {
       const token = jwt.sign(
         { id: user._id, isAdmin: user.isAdmin },
-        process.env.JWT_SECRET
+        "abc123"
       );
       const { password, ...rest } = user._doc;
-      res
-        .status(200)
-        .cookie('access_token', token, {
-          httpOnly: true,
-        })
-        .json(rest);
+      res.status(200).json({ token, ...rest });
     } else {
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
@@ -99,15 +85,10 @@ export const google = async (req, res, next) => {
       await newUser.save();
       const token = jwt.sign(
         { id: newUser._id, isAdmin: newUser.isAdmin },
-        process.env.JWT_SECRET
+        "abc123"
       );
       const { password, ...rest } = newUser._doc;
-      res
-        .status(200)
-        .cookie('access_token', token, {
-          httpOnly: true,
-        })
-        .json(rest);
+      res.status(200).json({ token, ...rest });
     }
   } catch (error) {
     next(error);

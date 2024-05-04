@@ -212,15 +212,20 @@ function AjoutProduit() {
           </div>
           <div className="w-full md:w-1/2 px-2 mb-4">
             <label className="block mb-2">Épaisseur (mm):</label>
-            <input
-              type="text"
-              name="epaisseur"
-              value={epaisseur}
-              onChange={handleChange}
-              placeholder="Entrez l'épaisseur"
-              className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            />
-          </div>
+            <select
+                name="epaisseur"
+                value={epaisseur}
+                onChange={handleChange}
+                className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                >
+                  <option value="">Sélectionner épaisseur</option>  
+                <option value="2">2 mm</option>
+                <option value="4">4 mm</option>
+                <option value="6">6 mm</option>
+                <option value="8">8 mm</option>
+                <option value="10">10 mm</option>
+            </select>
+            </div>
           <div className="w-full md:w-1/2 px-2 mb-4">
             <label className="block mb-2">Type:</label>
             <input

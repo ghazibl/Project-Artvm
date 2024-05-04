@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashSidebar from '../components/DashSidebar';
 import DashProfile from '../components/DashProfile';
-import DashPosts from '../components/DashPosts';
+import Dashcommandes from '../components/Dashcommandes';
 import DashUsers from '../components/DashUsers';
 import DashComments from '../components/DashComments';
 import DashboardComp from '../components/DashboardComp';
@@ -10,6 +10,7 @@ import AddProduct from './Stock/AddProduct';
 import ListeProduct from './Stock/ListeProduct';
 import AddFactureForm from './Facturation/AddFacture';
 import ListeFacture from './Facturation/ListeFacture';
+import Calendrier from './Calendrier';
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -29,7 +30,7 @@ export default function Dashboard() {
       {/* profile... */}
       {tab === 'profile' && <DashProfile />}
       {/* posts... */}
-      {tab === 'posts' && <DashPosts />}
+      {tab === 'commandes' && <Dashcommandes />}
       {/* users */}
       {tab === 'users' && <DashUsers />}
       {/* comments  */}
@@ -40,6 +41,7 @@ export default function Dashboard() {
       {tab === 'ListProduct' && <ListeProduct />}
       {tab === 'addfacture' && <AddFactureForm />}
       {tab === 'Listfacture' && <ListeFacture />}
+      {tab === 'Calendrier' && <Calendrier />}
     </div>
   );
 }

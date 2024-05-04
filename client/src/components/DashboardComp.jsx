@@ -8,11 +8,11 @@ import {
 } from 'react-icons/hi';
 import { Button, Table } from 'flowbite-react';
 import { Link } from 'react-router-dom';
-
+import { FaEye } from "react-icons/fa";
 export default function DashboardComp() {
   const [users, setUsers] = useState([]);
   const [comments, setComments] = useState([]);
-  const [posts, setPosts] = useState([]);
+  const [commandes, setCommandes] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPosts, setTotalPosts] = useState(0);
   const [totalComments, setTotalComments] = useState(0);
@@ -22,31 +22,55 @@ export default function DashboardComp() {
   const { currentUser } = useSelector((state) => state.user);
   useEffect(() => {
     const fetchUsers = async () => {
+  try {
+    const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+    console.log(token);
+    if (!token) {
+      throw new Error('Token not found');
+    }
+
+    const res = await fetch('http://localhost:3000/api/user/getusers?limit=5', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setUsers(data.users);
+      setTotalUsers(data.totalUsers);
+      setLastMonthUsers(data.lastMonthUsers);
+    } else {
+      console.error('Failed to fetch users:', data.message);
+    }
+  } catch (error) {
+    console.error('Error fetching users:', error.message);
+  }
+};
+    
+    const fetchCommande = async () => {
       try {
-        const res = await fetch('/api/user/getusers?limit=5');
+        const res = await fetch('http://localhost:3000/api/commande/ss');
         const data = await res.json();
         if (res.ok) {
-          setUsers(data.users);
-          setTotalUsers(data.totalUsers);
-          setLastMonthUsers(data.lastMonthUsers);
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    const fetchPosts = async () => {
-      try {
-        const res = await fetch('/api/post/getposts?limit=5');
-        const data = await res.json();
-        if (res.ok) {
-          setPosts(data.posts);
-          setTotalPosts(data.totalPosts);
+          console.log(data);
+          setCommandes(data);
+          setTotalPosts(1);
           setLastMonthPosts(data.lastMonthPosts);
         }
       } catch (error) {
         console.log(error.message);
       }
     };
+    const fetchCommandDetails = async (id) => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/commande/commandes/${id}`);
+        // Handle response, e.g., display command details in a modal
+        console.log(response.data); // Log the command details for now
+      } catch (error) {
+        console.error('Error fetching command details:', error);
+      }
+    };
+  
     const fetchComments = async () => {
       try {
         const res = await fetch('/api/comment/getcomments?limit=5');
@@ -62,7 +86,7 @@ export default function DashboardComp() {
     };
     if (currentUser.isAdmin) {
       fetchUsers();
-      fetchPosts();
+      fetchCommande();
       fetchComments();
     }
   }, [currentUser]);
@@ -72,7 +96,7 @@ export default function DashboardComp() {
         <div className='flex flex-col p-3 dark:bg-slate-800 gap-4 md:w-72 w-full rounded-md shadow-md'>
           <div className='flex justify-between'>
             <div className=''>
-              <h3 className='text-gray-500 text-md uppercase'>Total Users</h3>
+              <h3 className='text-gray-500 text-md uppercase'>Totales Utilisateus</h3>
               <p className='text-2xl'>{totalUsers}</p>
             </div>
             <HiOutlineUserGroup className='bg-teal-600  text-white rounded-full text-5xl p-3 shadow-lg' />
@@ -82,14 +106,14 @@ export default function DashboardComp() {
               <HiArrowNarrowUp />
               {lastMonthUsers}
             </span>
-            <div className='text-gray-500'>Last month</div>
+            <div className='text-gray-500'>Le mois dernier</div>
           </div>
         </div>
         <div className='flex flex-col p-3 dark:bg-slate-800 gap-4 md:w-72 w-full rounded-md shadow-md'>
           <div className='flex justify-between'>
             <div className=''>
               <h3 className='text-gray-500 text-md uppercase'>
-                Total Comments
+              Totales Factures
               </h3>
               <p className='text-2xl'>{totalComments}</p>
             </div>
@@ -100,13 +124,13 @@ export default function DashboardComp() {
               <HiArrowNarrowUp />
               {lastMonthComments}
             </span>
-            <div className='text-gray-500'>Last month</div>
+            <div className='text-gray-500'>Le mois dernier</div>
           </div>
         </div>
         <div className='flex flex-col p-3 dark:bg-slate-800 gap-4 md:w-72 w-full rounded-md shadow-md'>
           <div className='flex justify-between'>
             <div className=''>
-              <h3 className='text-gray-500 text-md uppercase'>Total Factures</h3>
+              <h3 className='text-gray-500 text-md uppercase'>Totales Commandes</h3>
               <p className='text-2xl'>{totalPosts}</p>
             </div>
             <HiDocumentText className='bg-lime-600  text-white rounded-full text-5xl p-3 shadow-lg' />
@@ -116,22 +140,23 @@ export default function DashboardComp() {
               <HiArrowNarrowUp />
               {lastMonthPosts}
             </span>
-            <div className='text-gray-500'>Last month</div>
+            <div className='text-gray-500'>Le mois dernier</div>
           </div>
         </div>
       </div>
       <div className='flex flex-wrap gap-4 py-3 mx-auto justify-center'>
         <div className='flex flex-col w-full md:w-auto shadow-md p-2 rounded-md dark:bg-gray-800'>
           <div className='flex justify-between  p-3 text-sm font-semibold'>
-            <h1 className='text-center p-2'>Recent users</h1>
+            <h1 className='text-center p-2'>Utilisateurs</h1>
             <Button outline gradientDuoTone='purpleToPink'>
-              <Link to={'/dashboard?tab=users'}>See all</Link>
+              <Link to={'/dashboard?tab=users'}>Voir tous</Link>
             </Button>
           </div>
           <Table hoverable>
             <Table.Head>
-              <Table.HeadCell>User image</Table.HeadCell>
-              <Table.HeadCell>Username</Table.HeadCell>
+              <Table.HeadCell> image</Table.HeadCell>
+              <Table.HeadCell>nom</Table.HeadCell>
+              <Table.HeadCell>Email</Table.HeadCell>
             </Table.Head>
             {users &&
               users.map((user) => (
@@ -145,6 +170,7 @@ export default function DashboardComp() {
                       />
                     </Table.Cell>
                     <Table.Cell>{user.username}</Table.Cell>
+                    <Table.Cell>{user.email}</Table.Cell>
                   </Table.Row>
                 </Table.Body>
               ))}
@@ -152,9 +178,9 @@ export default function DashboardComp() {
         </div>
         <div className='flex flex-col w-full md:w-auto shadow-md p-2 rounded-md dark:bg-gray-800'>
           <div className='flex justify-between  p-3 text-sm font-semibold'>
-            <h1 className='text-center p-2'>Recent comments</h1>
+            <h1 className='text-center p-2'>Factures</h1>
             <Button outline gradientDuoTone='purpleToPink'>
-              <Link to={'/dashboard?tab=comments'}>See all</Link>
+              <Link to={'/dashboard?tab=comments'}>Voir tous</Link>
             </Button>
           </div>
           <Table hoverable>
@@ -177,30 +203,34 @@ export default function DashboardComp() {
         </div>
         <div className='flex flex-col w-full md:w-auto shadow-md p-2 rounded-md dark:bg-gray-800'>
           <div className='flex justify-between  p-3 text-sm font-semibold'>
-            <h1 className='text-center p-2'>Recent posts</h1>
+            <h1 className='text-center p-2'> Commandes</h1>
             <Button outline gradientDuoTone='purpleToPink'>
-              <Link to={'/dashboard?tab=posts'}>See all</Link>
+              <Link to={'/dashboard?tab=commandes'}>Voir tous</Link>
             </Button>
           </div>
           <Table hoverable>
             <Table.Head>
-              <Table.HeadCell>Post image</Table.HeadCell>
-              <Table.HeadCell>Post Title</Table.HeadCell>
-              <Table.HeadCell>Category</Table.HeadCell>
+              <Table.HeadCell>Client </Table.HeadCell>
+              <Table.HeadCell>produit </Table.HeadCell>
+              <Table.HeadCell>Date </Table.HeadCell>
+              
             </Table.Head>
-            {posts &&
-              posts.map((post) => (
+            {commandes &&
+              commandes.map((post) => (
                 <Table.Body key={post._id} className='divide-y'>
                   <Table.Row className='bg-white dark:border-gray-700 dark:bg-gray-800'>
-                    <Table.Cell>
+                    <Table.Cell className='flex items-center'>
                       <img
-                        src={post.image}
+                        src={post.client.profilePicture}
                         alt='user'
                         className='w-14 h-10 rounded-md bg-gray-500'
                       />
+                      <p className='mx-4'> {post.client.username}</p>
                     </Table.Cell>
-                    <Table.Cell className='w-96'>{post.title}</Table.Cell>
-                    <Table.Cell className='w-5'>{post.category}</Table.Cell>
+                    
+                    <Table.Cell >{post.cart.product.nom}</Table.Cell>
+                    <Table.Cell >{(post.Date).slice(0,10)}</Table.Cell>
+                    <Table.Cell ><button onClick={() => fetchCommandDetails(post._id)} className='text-blue-700 '><FaEye/></button></Table.Cell>
                   </Table.Row>
                 </Table.Body>
               ))}

@@ -1,13 +1,15 @@
 import Facture from '../models/FactureModel.js';
 
-export const createFacture = async (req, res, next) => {
+
+
+export const createFacture = async (req, res) => {
+  const { commande, total, date, livraison } = req.body;
+
   try {
-    const { client, products, total, date, livraison } = req.body;
-    const numero = await Facture.getNextNumero();
+    const nextNumero = await Facture.getNextNumero(); // Obtenez le prochain numéro de facture
     const newFacture = new Facture({
-      numero, 
-      client,
-      products,
+      commande,
+      numero: nextNumero,
       total,
       date,
       livraison
@@ -15,67 +17,57 @@ export const createFacture = async (req, res, next) => {
     const savedFacture = await newFacture.save();
     res.status(201).json(savedFacture);
   } catch (error) {
-
-    next(error);
+    res.status(400).json({ message: error.message });
   }
 };
 
-export const getFactures = async (req, res, next) => {
+export const getFactures = async (req, res) => {
   try {
-    const factures = await Facture.find().populate('products');
-    res.status(200).json(factures);
+    const facture = await Facture.findById(req.params.id);
+    if (facture) {
+      res.status(200).json(facture);
+    } else {
+      res.status(404).json({ message: "Facture not found" });
+    }
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
+export const updateFacture = async (req, res) => {
+  const { commande, total, date, livraison } = req.body;
 
-export const getFactureProductDetail = async (factureId) => {
   try {
-    const facture = await Facture.findById(factureId);
-    if (!facture) {
-      throw new Error('Facture non trouvée');
+    const facture = await Facture.findById(req.params.id);
+    if (facture) {
+      facture.commande = commande;
+      facture.total = total;
+      facture.date = date;
+      facture.livraison = livraison;
+      
+      const updatedFacture = await facture.save();
+      res.status(200).json(updatedFacture);
+    } else {
+      res.status(404).json({ message: "Facture not found" });
     }
-
-    const productsWithDetails = [];
-    for (const product of facture.products) {
-      const productDetails = {
-        name: product.name,
-        hauteur: product.hauteur,
-        largeur: product.largeur,
-        quantite: product.quantite
-      };
-      productsWithDetails.push(productDetails);
-    }
-    return productsWithDetails;
   } catch (error) {
-    console.error('Une erreur s\'est produite lors de la récupération des détails de la facture : ', error);
-    return null;
+    res.status(400).json({ message: error.message });
   }
 };
-
 export const deleteFacture = async (req, res, next) => {
+  const { factureId } = req.params; // Supposons que l'ID de la facture soit passé en tant que paramètre d'URL
   try {
-    const { id } = req.params;
-    await Facture.findByIdAndDelete(id);
-    res.status(200).json({ message: 'Facture supprimée avec succès.' });
+    const facture = await Facture.findByIdAndDelete(factureId);
+    if (!facture) {
+      return res.status(404).json({ message: 'Facture non trouvée' });
+    }
+    res.status(200).json({ message: 'Facture supprimée avec succès' });
   } catch (error) {
+    console.error('Une erreur s\'est produite lors de la suppression de la facture : ', error);
     next(error);
   }
 };
 
-// Fonction pour modifier une facture
-export const editFacture = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { numero, client, produits, total, status } = req.body;
-    const updatedFacture = await Facture.findByIdAndUpdate(
-      id,
-      { numero, client, produits, total, status },
-      { new: true }
-    );
-    res.status(200).json(updatedFacture);
-  } catch (error) {
-    next(error);
-  }
-};
+
+
+

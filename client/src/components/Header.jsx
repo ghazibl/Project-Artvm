@@ -15,7 +15,8 @@ export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const { theme } = useSelector((state) => state.theme);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [userInfo, setUserInfo] = useState(null);
+  
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const searchTermFromUrl = urlParams.get('searchTerm');
@@ -24,6 +25,23 @@ export default function Header() {
     }
   }, [location.search]);
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        if (currentUser && currentUser._id) {
+          const res = await fetch(`http://localhost:3000/api/user/${currentUser._id}`);
+          const data = await res.json();
+          if (res.ok) {
+            setUserInfo(data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error.message);
+      }
+    };
+  
+    fetchUserInfo();
+  }, [currentUser]);
   const handleSignout = async () => {
     try {
       const res = await fetch('/api/user/signout', {
@@ -31,15 +49,15 @@ export default function Header() {
       });
       const data = await res.json();
       if (!res.ok) {
-        console.log(data.message);
+        throw new Error(data.message);
       } else {
-        dispatch(signoutSuccess());
+        dispatch(signoutSuccess()); // Dispatch the signoutSuccess action upon successful signout
+        localStorage.removeItem('token'); // Remove the token from localStorage
       }
     } catch (error) {
       console.log(error.message);
     }
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const urlParams = new URLSearchParams(location.search);
