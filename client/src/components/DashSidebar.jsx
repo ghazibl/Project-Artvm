@@ -80,6 +80,7 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Link>
           )}
+         
           {currentUser.isAdmin && (
             <Link to='/dashboard?tab=posts'>
               <Sidebar.Item
@@ -109,10 +110,22 @@ export default function DashSidebar() {
                 icon={HiDocumentText}
                 as='div'
               >
-                Liste Produits
+                Liste de Produits
               </Sidebar.Item>
             </Link>
           )}
+          {currentUser.isAdmin && (
+            <Link to='/dashboard?tab=ListeAccessoires'>
+              <Sidebar.Item
+                active={tab === 'ListeAccessoires'}
+                icon={HiDocumentText}
+                as='div'
+              >
+                Liste de Accessoires
+              </Sidebar.Item>
+            </Link>
+          )}
+          
            {currentUser.isAdmin && (
             <Link to='/dashboard?tab=addfacture'>
               <Sidebar.Item
@@ -131,7 +144,7 @@ export default function DashSidebar() {
                 icon={HiDocumentText}
                 as='div'
               >
-                Liste Factures
+                Liste de Factures
               </Sidebar.Item>
             </Link>
           )}

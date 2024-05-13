@@ -12,6 +12,7 @@ import cartRouter  from './routes/CartRoute.js';
 import commandeRoutes from './routes/CommandRoute.js'
 import eventRouter from './routes/EventRoute.js'
 import accessoireRoutes from './routes/accessoireRoutes.js'
+import devisRouter from './routes/DevisRouter.js'
 dotenv.config();
 
 mongoose
@@ -44,6 +45,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/commande', commandeRoutes);
 app.use('/api/events', eventRouter);
 app.use('/api/accessoire', accessoireRoutes);
+app.use('/api/devis', devisRouter);
 // Servir des fichiers statiques
 // Assurez-vous de configurer le chemin correct vers vos fichiers statiques
 // app.use(express.static(path.join(__dirname, '/client/dist')));

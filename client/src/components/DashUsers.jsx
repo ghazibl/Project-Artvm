@@ -19,7 +19,7 @@ export default function DashUsers() {
           throw new Error('Token not found');
         }
     
-        const res = await fetch('http://localhost:3000/api/user/getusers?limit=5', {
+        const res = await fetch('http://localhost:3000/api/user/getusers?', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

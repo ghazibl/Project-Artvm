@@ -36,6 +36,7 @@ export default function DashProfile() {
   const [formData, setFormData] = useState({});
   const filePickerRef = useRef();
   const dispatch = useDispatch();
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -101,36 +102,48 @@ export default function DashProfile() {
     e.preventDefault();
     setUpdateUserError(null);
     setUpdateUserSuccess(null);
+    
     if (Object.keys(formData).length === 0) {
-      setUpdateUserError('No changes made');
-      return;
+        setUpdateUserError('No changes made');
+        return;
     }
+    
     if (imageFileUploading) {
-      setUpdateUserError('Please wait for image to upload');
-      return;
+        setUpdateUserError('Please wait for image to upload');
+        return;
     }
+    
     try {
-      dispatch(updateStart());
-      const res = await fetch(`/api/user/update/${currentUser._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        dispatch(updateFailure(data.message));
-        setUpdateUserError(data.message);
-      } else {
-        dispatch(updateSuccess(data));
-        setUpdateUserSuccess("User's profile updated successfully");
-      }
+        dispatch(updateStart());
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No token found in localStorage');
+        }
+        
+        const res = await fetch(`/api/user/update/${currentUser._id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+        
+        if (!res.ok) {
+            const data = await res.json();
+            dispatch(updateFailure(data.message));
+            setUpdateUserError(data.message);
+        } else {
+            const data = await res.json();
+            dispatch(updateSuccess(data));
+            setUpdateUserSuccess("User's profile updated successfully");
+        }
     } catch (error) {
-      dispatch(updateFailure(error.message));
-      setUpdateUserError(error.message);
+        dispatch(updateFailure(error.message));
+        setUpdateUserError(error.message);
     }
-  };
+};
   const handleDeleteUser = async () => {
     setShowModal(false);
     try {

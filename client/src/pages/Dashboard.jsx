@@ -11,6 +11,10 @@ import ListeProduct from './Stock/ListeProduct';
 import AddFactureForm from './Facturation/AddFacture';
 import ListeFacture from './Facturation/ListeFacture';
 import Calendrier from './Calendrier';
+import AddAccess from './Stock/AddAccessoir';
+import Contact from '../components/Map/Contact';
+import AddDevis from './Devis/AddDevis';
+import ListeAccessoires from './Stock/ListeAccessoire';
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -42,6 +46,8 @@ export default function Dashboard() {
       {tab === 'addfacture' && <AddFactureForm />}
       {tab === 'Listfacture' && <ListeFacture />}
       {tab === 'Calendrier' && <Calendrier />}
+      {tab === 'ListeAccessoires' && <ListeAccessoires />}
+      {tab === 'AjoutAccessoire' && <AddAccess />}
     </div>
   );
 }

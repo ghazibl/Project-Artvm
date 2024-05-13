@@ -1,13 +1,13 @@
 import express from 'express';
-import { createProduct, getProduct, findProductByName,updateProduct } from '../controllers/ProductController.js';
-import upload from '../middleware/uploadImage.js';
+import { createProduct,getProductById, getProduct, findProductByName,updateProduct } from '../controllers/ProductController.js';
 
 const router = express.Router();
 
 
 router.post('/',  createProduct);
 router.get("/", getProduct);
+router.get("/:productId", getProductById);
 router.get('/product', findProductByName);
-router.post('/product/:productId', updateProduct);
+router.put('/product/:productId', updateProduct);
 
 export default router;

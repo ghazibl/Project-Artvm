@@ -102,3 +102,23 @@ export const createProduct = async (req, res) => {
         res.status(500).json({ error: "Erreur interne du serveur" });
     }
 };
+export const getProductById = async (req, res) => {
+  try {
+      const { productId } = req.params; // ID du produit à récupérer
+
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+          return res.status(404).json({ message: "ID du produit invalide." });
+      }
+
+      const product = await Product.findById(productId);
+
+      if (!product) {
+          return res.status(404).json({ message: "Produit non trouvé." });
+      }
+
+      res.status(200).json(product);
+  } catch (error) {
+      console.error("Erreur lors de la récupération du produit par ID :", error);
+      res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+};

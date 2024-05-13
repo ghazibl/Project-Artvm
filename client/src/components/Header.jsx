@@ -6,6 +6,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { toggleTheme } from '../redux/theme/themeSlice';
 import { signoutSuccess } from '../redux/user/userSlice';
 import { useEffect, useState } from 'react';
+import SmoothScroll from 'smooth-scroll';
+
 
 export default function Header() {
   const path = useLocation().pathname;
@@ -30,6 +32,7 @@ export default function Header() {
       try {
         if (currentUser && currentUser._id) {
           const res = await fetch(`http://localhost:3000/api/user/${currentUser._id}`);
+          console.log(currentUser._id);
           const data = await res.json();
           if (res.ok) {
             setUserInfo(data);
@@ -41,7 +44,7 @@ export default function Header() {
     };
   
     fetchUserInfo();
-  }, [currentUser]);
+  }, [currentUser] );
   const handleSignout = async () => {
     try {
       const res = await fetch('/api/user/signout', {
@@ -65,7 +68,14 @@ export default function Header() {
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
   };
+  const scroll = new SmoothScroll();
 
+  const scrollToSection = (event) => {
+    event.preventDefault();
+    scroll.animateScroll(document.querySelector('#contact-section'), null, {
+      speed: 500, // Durée de l'animation en millisecondes (par exemple, 1000 pour une seconde)
+    });
+  };
   return (
     <Navbar className='border-b-2'>
       <Link
@@ -113,16 +123,16 @@ export default function Header() {
                 {currentUser.email}
               </span>
             </Dropdown.Header>
-            <Link to={'/dashboard?tab=profile'}>
-              <Dropdown.Item>Profile</Dropdown.Item>
+            <Link to={'/dashboard?tab=dash'}>
+              <Dropdown.Item>Tableau de bord</Dropdown.Item>
             </Link>
             <Dropdown.Divider />
-            <Dropdown.Item onClick={handleSignout}>Sign out</Dropdown.Item>
+            <Dropdown.Item onClick={handleSignout}>Se déconnecter</Dropdown.Item>
           </Dropdown>
         ) : (
           <Link to='/sign-in'>
             <Button gradientDuoTone='purpleToBlue' outline>
-              Sign In
+            Se connecter
             </Button>
           </Link>
         )}
@@ -135,9 +145,9 @@ export default function Header() {
         <Navbar.Link active={path === '/about'} as={'div'}>
           <Link to='/about'>About</Link>
         </Navbar.Link>
-        <Navbar.Link active={path === '/projects'} as={'div'}>
-          <Link to='/projects'>Projects</Link>
-        </Navbar.Link>
+        <a href='#contact-section' onClick={scrollToSection}>
+          Autres informations?
+        </a>
       </Navbar.Collapse>
     </Navbar>
   );

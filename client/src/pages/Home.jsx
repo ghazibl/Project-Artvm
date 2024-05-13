@@ -3,6 +3,11 @@ import CallToAction from '../components/CallToAction';
 import { useEffect, useState } from 'react';
 import MapComponent from '../components/Map/MapComponent';
 import Contact from '../components/Map/Contact';
+import CallToAccessoire from '../components/CallAccessoire';
+import CallToProject from '../components/CallToProject';
+import { CiDiscount1 } from "react-icons/ci";
+
+
 export default function Home() {
   const [posts, setPosts] = useState([]);
 
@@ -18,26 +23,37 @@ export default function Home() {
     <div>
       <div className='flex flex-col gap-6 p-28 px-3 max-w-6xl mx-auto '>
         <h1 className='text-3xl font-bold lg:text-6xl'>Bienvenue chez ARTVM</h1>
-        <p className='text-gray-500 text-xs sm:text-sm'>
+        <h2 className='text-2xl font-bold lg:text-6xl'>Du verre sur-mesure pour toutes vos envies. </h2>       
+        <p className='text-gray-500 text-xl '>
           Choisissez votre verre préféré,et nous le livrerons à votre maison.
         </p>
         <Link
           to='/search'
-          className='text-xs sm:text-sm text-teal-500 font-bold hover:underline'
+          className='text-xs sm:text-xl text-red-500 font-bold flex hover:underline'
         >
-          View all posts
+          Les remises <CiDiscount1  className='text-red-500 mt-1 ml-1 text-2xl'/>
+
         </Link>
       </div>
-      <div className='p-3 bg-blue-200 dark:bg-slate-700 py-4'>
+      <div className='bg-blue-100'>
+      <div className='p-3  dark:bg-slate-700 py-4 mb-6 rounded-2xl'>
         <CallToAction />
       </div>
-      <div className='py-10 '>
-      <MapComponent/>
+      <div className='p-3  dark:bg-slate-700 py-4 mt-10 rounded-2xl'>
+        <CallToAccessoire />
       </div>
-    <div className='py-10 px-20 '>
-    <Contact/>
-    </div >
-   
+      <div className='p-3  dark:bg-slate-700 py-4 mt-10 rounded-2xl'>
+        <CallToProject />
+      </div >
+      </div>
+  <div className="py-10 px-20">
+    <MapComponent />
+  </div>
+  
+  <div className=" " id="contact-section">
+    <Contact />
+  </div>
+  
     </div>
   );
 }

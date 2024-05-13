@@ -27,12 +27,14 @@ const productSchema = new mongoose.Schema({
         required: true },
     image: { 
         type: String,
-         required: false },
+         required: true },
     status: {
         type: String,
-        required: false,
-        enum: ['En stock', 'Épuisé'] // Supprimez l'espace supplémentaire ici
-    }
+        required: true,
+        default: 'En stock',
+        enum: ['En stock', 'Épuisé'] 
+    },
+  
 });
 const Product = mongoose.model('Product', productSchema);
 

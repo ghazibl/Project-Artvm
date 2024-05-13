@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { HiClipboardDocumentList } from "react-icons/hi2";
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { app } from '../../firebase.js';
+
 
 function AjoutProduit() {
   const [nom, setNom] = useState('');
@@ -165,6 +164,7 @@ function AjoutProduit() {
     <div className="max-w-2xl mx-auto p-4">
    <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold">Ajouter produit</h2>
+        <a href='/dashboard?tab=AjoutAccessoire' className="text-blue-500 text-3xl">Accessoire</a>
         <a href='/dashboard?tab=ListProduct' className="text-blue-500 text-3xl"><HiClipboardDocumentList /></a>
       </div>
       <form onSubmit={handleSubmit} encType="multipart/form-data" className="mt-4">

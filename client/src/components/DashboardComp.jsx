@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
   HiAnnotation,
@@ -7,18 +7,25 @@ import {
   HiOutlineUserGroup,
 } from 'react-icons/hi';
 import { Button, Table } from 'flowbite-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate  } from 'react-router-dom';
 import { FaEye } from "react-icons/fa";
+import { IoCloseSharp } from "react-icons/io5";
+import axios from 'axios';
+import StockChart from './StockChart';
+
 export default function DashboardComp() {
   const [users, setUsers] = useState([]);
   const [comments, setComments] = useState([]);
   const [commandes, setCommandes] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [totalPosts, setTotalPosts] = useState(0);
+  const [totalCommande, setTotalPosts] = useState(0);
   const [totalComments, setTotalComments] = useState(0);
   const [lastMonthUsers, setLastMonthUsers] = useState(0);
   const [lastMonthPosts, setLastMonthPosts] = useState(0);
   const [lastMonthComments, setLastMonthComments] = useState(0);
+  const [details, setDetails] = useState(null);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
   useEffect(() => {
     const fetchUsers = async () => {
@@ -49,27 +56,19 @@ export default function DashboardComp() {
     
     const fetchCommande = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/commande/ss');
+        const res = await fetch('http://localhost:3000/api/commande/getAll?limit=5');
         const data = await res.json();
         if (res.ok) {
           console.log(data);
           setCommandes(data);
-          setTotalPosts(1);
-          setLastMonthPosts(data.lastMonthPosts);
+          setTotalPosts(4);
+          setLastMonthPosts(2);
         }
       } catch (error) {
         console.log(error.message);
       }
     };
-    const fetchCommandDetails = async (id) => {
-      try {
-        const response = await axios.get(`http://localhost:3000/api/commande/commandes/${id}`);
-        // Handle response, e.g., display command details in a modal
-        console.log(response.data); // Log the command details for now
-      } catch (error) {
-        console.error('Error fetching command details:', error);
-      }
-    };
+    
   
     const fetchComments = async () => {
       try {
@@ -90,13 +89,63 @@ export default function DashboardComp() {
       fetchComments();
     }
   }, [currentUser]);
+
+  const fetchCommandDetails = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/commande/commandes/${id}`);
+      const data = await response.json();
+      setDetails(data);
+    } catch (error) {
+      console.error('Error fetching command details:', error);
+    }
+  };
+  const handleConfirme = async (id) => {
+
+    try {
+      console.log(id);
+      const response = await axios.put(`http://localhost:3000/api/commande/confirm/${id}`);
+     
+      if (response.data && response.data.success) {
+        // Successful update, you can perform additional actions if needed
+        console.log('Commande confirme avec succès');
+        setDetails(null);
+      } else {
+        // Error handling
+        console.error(response.data && response.data.message);
+      }
+    } catch (error) {
+      // Request error handling
+      console.error('Une erreur s\'est produite lors de la mise à jour du statut de la commande :', error);
+    }
+    console.log(id);
+    navigate(`/addDevis?commandeId=${id}`);
+  };
+  const handleRefuse = async (id) => {
+    try {
+      console.log(id);
+      const response = await axios.put(`http://localhost:3000/api/commande/refuse/${id}`);
+     
+      if (response.data && response.data.success) {
+        // Successful update, you can perform additional actions if needed
+        console.log('Commande refusée avec succès');
+        setDetails(null);
+      } else {
+        // Error handling
+        console.error(response.data && response.data.message);
+      }
+    } catch (error) {
+      // Request error handling
+      console.error('Une erreur s\'est produite lors de la mise à jour du statut de la commande :', error);
+    }
+    
+  };
   return (
     <div className='p-3 md:mx-auto'>
       <div className='flex-wrap flex gap-4 justify-center'>
         <div className='flex flex-col p-3 dark:bg-slate-800 gap-4 md:w-72 w-full rounded-md shadow-md'>
           <div className='flex justify-between'>
             <div className=''>
-              <h3 className='text-gray-500 text-md uppercase'>Totales Utilisateus</h3>
+              <h3 className='text-gray-500 text-md uppercase'>Totales Utilisateurs</h3>
               <p className='text-2xl'>{totalUsers}</p>
             </div>
             <HiOutlineUserGroup className='bg-teal-600  text-white rounded-full text-5xl p-3 shadow-lg' />
@@ -131,7 +180,7 @@ export default function DashboardComp() {
           <div className='flex justify-between'>
             <div className=''>
               <h3 className='text-gray-500 text-md uppercase'>Totales Commandes</h3>
-              <p className='text-2xl'>{totalPosts}</p>
+              <p className='text-2xl'>{totalCommande}</p>
             </div>
             <HiDocumentText className='bg-lime-600  text-white rounded-full text-5xl p-3 shadow-lg' />
           </div>
@@ -154,9 +203,9 @@ export default function DashboardComp() {
           </div>
           <Table hoverable>
             <Table.Head>
-              <Table.HeadCell> image</Table.HeadCell>
-              <Table.HeadCell>nom</Table.HeadCell>
-              <Table.HeadCell>Email</Table.HeadCell>
+              <Table.HeadCell> Image</Table.HeadCell>
+              <Table.HeadCell>Nom</Table.HeadCell>
+              <Table.HeadCell>Adresse Email</Table.HeadCell>
             </Table.Head>
             {users &&
               users.map((user) => (
@@ -235,8 +284,35 @@ export default function DashboardComp() {
                 </Table.Body>
               ))}
           </Table>
+          {details && (
+  <div className="modal-overlay fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-75">
+    <div className="modal-container bg-white w-96 p-6 rounded-lg shadow-lg">
+      <div className='flex justify-between'>
+      <h3 className="text-xl font-semibold mb-4 ">Demande par <strong className='text-green-700'>{details.client.username}</strong></h3>
+      <button onClick={() => setDetails(null)} className="btn-primary text-2xl text-black px-2 py-2 rounded-lg"><IoCloseSharp /></button>
+      </div>
+      <div>
+      
+        <p>Produit: {details.cart.product.nom}</p>
+        <p>Epaisseur: {details.cart.product.epaisseur}</p>
+        <p>Hauteur: {details.cart.hauteur} m</p>
+        <p>Largeur: {details.cart.largeur} m</p>
+        
+        <p>Quantité Commander: {details.cart.quantite} m </p>
+        <p className='text-green-700 font-semibold'>Quantité En Stock: {details.cart.product.quantite} m </p>
+        
+        {/* Add more command details here */}
+      </div>
+      <div className="flex justify-center mt-8">
+      <button className='bg-blue-700 rounded px-2 py-2 text-white'  onClick={() => handleConfirme(details._id)}>Confirmer</button>
+      <button className='bg-red-700 rounded px-4 py-2 mx-4 text-white' onClick={() => handleRefuse(details._id)}>Refuser</button>
+      </div>
+    </div>
+  </div>
+)}
         </div>
       </div>
+     
     </div>
   );
 }

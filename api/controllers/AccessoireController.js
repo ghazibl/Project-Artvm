@@ -1,32 +1,28 @@
-// accessoireController.js
+import Accessoire from '../models/Accessoire.js'; 
 
-import Accessoire from '../models/Accessoire.js'; // Assuming your model file is named AccessoireModel.js
 
-// Create a new Accessoire
 const createAccessoire = async (req, res) => {
     try {
-        const {
+        const { nom, description, prix, type, image,quantite, status } = req.body;
+      
+        const newAccessoire = new Accessoire({
             nom,
             description,
             prix,
+            quantite,
             type,
+            image,
             status 
-          } = req.body;
+        });
       
-          const newAcces = new Accessoire({
-            nom,
-            description,
-            prix,
-            type,
-            status 
-          });
-      
-          const savedAccess = await newAcces.save();
-          res.status(201).json(savedAccess);
+        const savedAccessoire = await newAccessoire.save();
+        console.log(savedAccessoire); // Log the saved Accessoire object
+        res.status(201).json({ success: true, data: savedAccessoire });
     } catch (err) {
         res.status(400).json({ success: false, error: err.message });
     }
 };
+
 
 // Get all Accessoires
 const getAllAccessoires = async (req, res) => {

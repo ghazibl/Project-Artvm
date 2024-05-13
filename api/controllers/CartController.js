@@ -1,48 +1,41 @@
-import Cart from '../models/CartModel.js'; // Assurez-vous de pointer vers le bon chemin pour votre modèle Cart
 
-// Contrôleur pour créer un nouvel article dans le panier
-export const createCartItem = async (req, res) => {
-  const { product, hauteur, largeur, quantite } = req.body;
 
+import Cart from '../models/CartModel.js';
+import ProductCart from '../models/ProduitCart.js';
+
+// Contrôleur pour ajouter un produit au panier
+export const addToCart = async (req, res) => {
   try {
-    // Créer une nouvelle instance de Cart avec les données fournies
-    const newItem = new Cart({
-      product,
+    const { productId, hauteur, largeur, quantite } = req.body;
+    const { userId } = req.params;
+
+    // Créer un nouveau produit de panier
+    const productCart = new ProductCart({
+      product: productId,
       hauteur,
       largeur,
-      quantite
+      quantite,
     });
-        console.log(product);
-    // Enregistrer l'article dans la base de données
-    const savedItem = await newItem.save();
+    await productCart.save();
 
-    res.status(201).json(savedItem); // Répondre avec les données de l'article créé
+    // Trouver ou créer un panier pour l'utilisateur
+    let cart = await Cart.findOne({ user: userId });
+    if (!cart) {
+      cart = new Cart({
+        user: userId,
+        productCart: [],
+      });
+    }
+
+    // Ajouter le nouveau produit au panier
+    cart.productCart.push(productCart);
+    await cart.save();
+
+    res.status(201).json({ message: 'Produit ajouté au panier avec succès' });
   } catch (error) {
-    res.status(400).json({ message: error.message }); // En cas d'erreur, répondre avec un message d'erreur
+    console.error('Erreur lors de l\'ajout du produit au panier :', error);
+    res.status(500).json({ message: 'Une erreur s\'est produite lors de l\'ajout du produit au panier' });
   }
 };
 
-export const getCartItems = async (req, res) => {
-    try {
-      const cartItems = await Cart.find();
-      res.status(200).json(cartItems);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
-  
-  // Contrôleur pour supprimer un article du panier
- export const deleteCartItem = async (req, res) => {
-    const { id } = req.params;
-    try {
-      const deletedItem = await Cart.findByIdAndRemove(id);
-      if (!deletedItem) {
-        return res.status(404).json({ message: 'Article non trouvé dans le panier' });
-      }
-      res.status(200).json({ message: 'Article supprimé du panier avec succès' });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
-  
 

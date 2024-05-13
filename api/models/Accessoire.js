@@ -12,12 +12,17 @@ const AccessoireSchema = new mongoose.Schema({
          },
     quantite: { 
         type: Number, 
-        required: true },
+         },
     type: { 
         type: String, 
         required: true },
+    image: { 
+            type: String,
+             required: true },
     Status:{
         type: String,
+        default: 'En stock',
+       
         enum: ['En stock', 'Épuisé'] 
       }
     
