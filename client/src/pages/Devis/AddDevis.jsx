@@ -1,57 +1,143 @@
-import React from 'react';
-import { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
-const AddDevis = ({ cart }) => {
-  const [message, setMessage] = useState('');
-  const [dateLivraison, setDateLivraison] = useState('');
-  const [status, setStatus] = useState('En attente'); // Définir le statut par défaut
+const AddDevis = () => {
+  const [detailsDevis, setDetailsDevis] = useState(null);
+  const [remise, setRemise] = useState("");
+  const [prix, setPrix] = useState("");
+  const [date, setDate] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [message, setMessage] = useState("");
+  const { id } = useParams();
+  const[prixTotal,setPrixTotal] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDevisDetails = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/devis/devi/${id}`);
+        const data = await res.json();
+        if (res.ok) {
+          console.log(data);
+          setDetailsDevis(data);
+          setPrixTotal(data.PrixTotal);
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+
+    fetchDevisDetails();
+  }, [id]);
+
+  const calculatePrixApresRemise = () => {
+    if (remise && prixTotal) {
+      const prixFloat = parseFloat(prixTotal);
+      const remiseFloat = parseFloat(remise);
+      const prixApresRemise = prixFloat - (prixFloat * remiseFloat / 100);
+      return prixApresRemise.toFixed(2); // Arrondir à deux décimales
+    }
+    return "";
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+   
+
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3000/api/devis', {
-        cart,
-        message,
-        prixTotals: calculateTotalPrice(cart),
-        prixApresRemise: calculateTotalPrice(cart), // Pour l'exemple, pas de remise pour l'instant
-        dateLivraison,
-        status,
-      }, {
+      const res = await fetch(`http://localhost:3000/api/devis/devi/${id}`, {
+        method: 'PUT',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          Remise: remise,
+          PrixApresRemise: calculatePrixApresRemise(),
+          DateLivraison: date,
+          messageAdmin: additionalInfo,
+        }),
       });
-      console.log(response.data);
-      // Réinitialiser les champs après soumission réussie
-      setMessage('');
-      setDateLivraison('');
-      setStatus('En attente');
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Devis submitted successfully.");
+        navigate('/dashboard?tab=dash');
+      } else {
+        setMessage(data.message);
+      }
     } catch (error) {
-      console.error('Erreur lors de la soumission du devis:', error);
+      console.error('Error:', error);
+      setMessage("An error occurred while submitting the form.");
     }
   };
 
-  // Fonction pour calculer le prix total du devis
-  const calculateTotalPrice = (cart) => {
-    return cart.reduce((total, item) => total + (item.product.prix * item.quantite), 0);
-  };
+  if (!detailsDevis) {
+    return <div>No details available</div>;
+  }
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Demande de Devis</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="message" className="block text-gray-700 font-bold mb-2">Message:</label>
-          <textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} className="resize-none border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="4" required />
+    <div className='px-4 md:px-40'>
+      <div className='w-full md:w-3/4 mx-auto'>
+        <h1 className="text-xl font-bold mb-4 mt-10">Nouveau Devis</h1>
+        <div className='bg-slate-100 px-4 py-2 pt-4'>
+          <p>Nom : {detailsDevis.client?.username}</p>
+          <p>Adresse Email : {detailsDevis.client?.email}</p>
+          <p>Date: {new Date(detailsDevis.DateCreation).toLocaleDateString()}</p>
+          <h2 className="mt-2 mb-2 font-bold">Produit :</h2>
+          <table className="border-collapse border border-gray-300 w-full">
+            <thead>
+              <tr className='bg-gray-500 text-white'>
+                <th className="border border-gray-300 p-2">Nom</th>
+                <th className="border border-gray-300 p-2">Epaisseur</th>
+                <th className="border border-gray-300 p-2">Hauteur</th>
+                <th className="border border-gray-300 p-2">Largeur</th>
+                <th className="border border-gray-300 p-2">Quantité</th>
+                <th className="border border-gray-300 p-2">Prix</th>
+              </tr>
+            </thead>
+            <tbody>
+              {detailsDevis.productCart.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-100">
+                  <td className="border border-gray-300 p-2">{item.product.nom}</td>
+                  <td className="border border-gray-300 p-2">{item.product.epaisseur}mm</td>
+                  <td className="border border-gray-300 p-2">{item.hauteur}m</td>
+                  <td className="border border-gray-300 p-2">{item.largeur}m</td>
+                  <td className="border border-gray-300 p-2">{item.quantite}</td>
+                  <td className="border border-gray-300 p-2">{item.prixCart} DT</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="pt-4 font-bold text-right">Prix Total : {detailsDevis.PrixTotal} DT</p>
         </div>
-        <div className="mb-4">
-          <label htmlFor="dateLivraison" className="block text-gray-700 font-bold mb-2">Date de Livraison:</label>
-          <input type="date" id="dateLivraison" value={dateLivraison} onChange={(e) => setDateLivraison(e.target.value)} className="border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+        <div className="bg-white px-4 py-4 mt-2 rounded shadow-md">
+          <form onSubmit={handleSubmit}>
+            <div className='md:flex md:justify-between md:space-x-4'>
+              <div className="mb-4 flex-1">
+                <label className="block mb-1">Remise :</label>
+                <input type="text" placeholder='Remise en %' value={remise} onChange={(e) => setRemise(e.target.value)} className="border border-gray-300 p-2 w-full rounded" />
+              </div>
+              <div className="mb-4 flex-1">
+              <label className="block mb-1">Prix Après Remise :</label>
+              <p>{calculatePrixApresRemise()} DT</p>
+            </div>
+            </div>
+            <div className="mb-4 ">
+              <label className="block mb-1">Date de Livraison :</label>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border border-gray-300 p-2 w-full rounded" />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1">Plus d'information :</label>
+              <textarea value={additionalInfo} onChange={(e) => setAdditionalInfo(e.target.value)} className="border border-gray-300 p-2 w-full rounded"></textarea>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="text-red-500">{message}</div>
+              <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Envoyer
+              </button>
+            </div>
+          </form>
         </div>
-        <button type="submit" className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">Demander le Devis</button>
-      </form>
+      </div>
     </div>
   );
 };

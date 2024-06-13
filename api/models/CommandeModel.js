@@ -1,19 +1,34 @@
 
 import mongoose from 'mongoose';
 
+
 const CommandeSchema = new mongoose.Schema({
-cart : {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Cart'
+productCart : {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'ProductCart'
 },
 client : {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
 },
+devis :{
+    type : mongoose.Schema.Types.ObjectId,
+    ref: 'Devis'
+
+},
 QuentiteTotals : {
     type: Number,
-    required: true
+    
 },
+prixTotale: {
+    type: Number,
+    default: 0,
+   },
+
+  livraison: {
+    type: Boolean,
+    required: false
+  },
 Date :{
     type: Date,
     default : Date.now,

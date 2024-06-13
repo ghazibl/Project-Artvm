@@ -1,0 +1,27 @@
+.chart {
+    height: 50vh;
+    width:60%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    gap: 2vw;
+    flex-wrap: wrap;
+  
+   
+  }
+  
+ 
+  
+.butoon{
+  width: 4em !important;
+
+}
+  
+
+  .categoryCard{
+    width: 80%;
+    height: 25rem;
+    
+  }

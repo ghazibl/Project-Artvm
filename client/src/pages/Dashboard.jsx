@@ -15,6 +15,14 @@ import AddAccess from './Stock/AddAccessoir';
 import Contact from '../components/Map/Contact';
 import AddDevis from './Devis/AddDevis';
 import ListeAccessoires from './Stock/ListeAccessoire';
+import FactureAchat from './Stock/ProductAchat';
+import FactureAchatAdd from './Stock/ProductAchatAdd';
+import ContactComp from '../components/Map/GetContact';
+import DashCompUser from './User/DashCompUser';
+import AddFacture from './Facturation/AddFacture';
+import ImprimerFact from './Facturation/ImprimerFact';
+import ListeDevis from './Devis/ListeDevis';
+import CreatePost from './CreatePost';
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -38,16 +46,25 @@ export default function Dashboard() {
       {/* users */}
       {tab === 'users' && <DashUsers />}
       {/* comments  */}
-      {tab === 'comments' && <DashComments />}
+      {tab === 'comments' && <ContactComp />}
       {/* dashboard comp */}
       {tab === 'dash' && <DashboardComp />}
+      {tab === 'dashUser' && <DashCompUser />}
+      
+      {tab === 'factAchat' && <FactureAchat />}
       {tab === 'addproduct' && <AddProduct />}
       {tab === 'ListProduct' && <ListeProduct />}
-      {tab === 'addfacture' && <AddFactureForm />}
+      {tab === 'addfacture' && <AddFacture />}
       {tab === 'Listfacture' && <ListeFacture />}
       {tab === 'Calendrier' && <Calendrier />}
       {tab === 'ListeAccessoires' && <ListeAccessoires />}
       {tab === 'AjoutAccessoire' && <AddAccess />}
+      {tab === 'addProductAchat' && <FactureAchatAdd />}
+      {tab === 'addDevis/:id' && <AddDevis/>}
+      {tab === 'demandeDevis/:id' && <AddDevis />}
+      {tab === 'addfacture/:id' && <AddFacture />}
+      {tab === 'devis' && <ListeDevis />}
+      {tab ==='create-post' && <CreatePost /> }
     </div>
   );
 }

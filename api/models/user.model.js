@@ -22,10 +22,22 @@ const userSchema = new mongoose.Schema(
       default:
         'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
     },
+    address: {
+      type: String,
+  },
+   phoneNumber :{
+      type: Number,
+         
+    },
     isAdmin: {
       type: Boolean,
       default: false,
     },
+    isActive:{
+      type: Boolean,
+      default: false,
+    },
+    activationCode : String,
   },
 );
 

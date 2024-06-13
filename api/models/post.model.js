@@ -1,38 +1,52 @@
 import mongoose from 'mongoose';
 
-const postSchema = new mongoose.Schema(
+const ProductUserSchema = new mongoose.Schema(
   {
-    userId: {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    title: {
       type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+    },
+    category: {
+      type: String,
+      enum: ['uncategorized', 'miroir', 'lisse', 'chagrin'],
+      default: 'uncategorized',
+    },
+    height: {
+      type: Number,
+      required: true,
+    },
+    width: {
+      type: Number,
+      required: true,
+    },
+    quantity: {
+      type: Number,
       required: true,
     },
     content: {
       type: String,
       required: true,
     },
-    title: {
+    status: {
       type: String,
-      required: true,
-      unique: true,
+      default: 'En attente',
+      enum: ['En attente', 'confirmé', 'refusé'],
     },
-    image: {
-      type: String,
-      default:
-        'https://www.hostinger.com/tutorials/wp-content/uploads/sites/2/2021/09/how-to-write-a-blog-post.png',
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
-    category: {
-      type: String,
-      default: 'uncategorized',
-    },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-  },
-  { timestamps: true }
+  }
 );
 
-const Post = mongoose.model('Post', postSchema);
+const ProductUser = mongoose.model('ProductUser', ProductUserSchema);
 
-export default Post;
+export default ProductUser;

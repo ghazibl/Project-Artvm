@@ -8,11 +8,18 @@ import FacturRoutes from './routes/FactureRoute.js';
 import productRouter from './routes/ProductRoute.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import contactRoutes from './routes/ContactRoutes.js'
 import cartRouter  from './routes/CartRoute.js';
 import commandeRoutes from './routes/CommandRoute.js'
 import eventRouter from './routes/EventRoute.js'
-import accessoireRoutes from './routes/accessoireRoutes.js'
-import devisRouter from './routes/DevisRouter.js'
+import projectRoutes from './routes/ProjectRoutes.js'
+import devisRouter from './routes/DevisRouter.js';
+import productCartRoute from './routes/ProductCartRoute.js'
+import NotificationService from './utils/NotificationService.js';
+import { Server } from 'socket.io';
+import http from 'http';
+import notificationRoutes from './routes/NotificationRoute.js';
+import { checkEvents } from './controllers/EventController.js';
 dotenv.config();
 
 mongoose
@@ -26,26 +33,44 @@ mongoose
 
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*', // Autorisez les requêtes CORS de votre frontend
+    methods: ['GET', 'POST'],
+  },
+});
+const notificationService = new NotificationService(io);
+app.set('notificationService', notificationService);
+
+setInterval(async () => {
+  try {
+    await checkEvents(notificationService);
+  } catch (error) {
+    console.error('Error checking events:', error);
+  }
+}, 60000);
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000!');
-});
+
 
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/post', postRoutes);
-app.use('/api/facture', FacturRoutes);
-
+app.use('/api/factures', FacturRoutes);
+app.use('/api', contactRoutes);
 app.use('/api/products', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/commande', commandeRoutes);
 app.use('/api/events', eventRouter);
-app.use('/api/accessoire', accessoireRoutes);
+app.use('/api/project', projectRoutes);
 app.use('/api/devis', devisRouter);
+app.use("/api/productCard", productCartRoute);
+app.use('/api/notifications', notificationRoutes);
+
 // Servir des fichiers statiques
 // Assurez-vous de configurer le chemin correct vers vos fichiers statiques
 // app.use(express.static(path.join(__dirname, '/client/dist')));
@@ -60,4 +85,7 @@ app.use((err, req, res, next) => {
     statusCode,
     message,
   });
+});
+server.listen(3000, () => {
+  console.log('Server is running on port 3000!');
 });

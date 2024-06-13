@@ -1,41 +1,71 @@
+import Cart from "../models/CartModel.js";
 
-
-import Cart from '../models/CartModel.js';
-import ProductCart from '../models/ProduitCart.js';
-
-// Contrôleur pour ajouter un produit au panier
-export const addToCart = async (req, res) => {
+export const getCardbyUser = async (req, res) => {
   try {
-    const { productId, hauteur, largeur, quantite } = req.body;
-    const { userId } = req.params;
-
-    // Créer un nouveau produit de panier
-    const productCart = new ProductCart({
-      product: productId,
-      hauteur,
-      largeur,
-      quantite,
+    const user = req.user;
+  console.log(user);
+    const productCart = await Cart.findOne({ user: user.userId }).populate({
+      path: "productCart",
+      populate: { path: "product" },
     });
-    await productCart.save();
 
-    // Trouver ou créer un panier pour l'utilisateur
-    let cart = await Cart.findOne({ user: userId });
-    if (!cart) {
-      cart = new Cart({
-        user: userId,
-        productCart: [],
-      });
-    }
-
-    // Ajouter le nouveau produit au panier
-    cart.productCart.push(productCart);
-    await cart.save();
-
-    res.status(201).json({ message: 'Produit ajouté au panier avec succès' });
+    res.status(200).json(productCart);
   } catch (error) {
-    console.error('Erreur lors de l\'ajout du produit au panier :', error);
-    res.status(500).json({ message: 'Une erreur s\'est produite lors de l\'ajout du produit au panier' });
+    res.status(400).json({ message: error.message });
   }
 };
 
+export const removeFromCart = async (req, res) => {
+  const { cartId, productCardId } = req.body;
+  try {
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({ error: "Cart not found" });
+    }
 
+    const index = cart.productCart.indexOf(productCardId);
+    if (index === -1) {
+      return res
+        .status(404)
+        .json({ error: "Product card not found in the cart" });
+    }
+
+    cart.productCart.splice(index, 1);
+
+    await cart.save();
+    return res
+      .status(200)
+      .json({ message: "Product removed from cart successfully", cart });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+export const deleteCart = async (req, res) => {
+  try {
+    const { cartId } = req.params;
+
+    const deletedCart = await Cart.findByIdAndDelete(cartId);
+    if (!deletedCart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    res.status(200).json({ message: "Cart deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const createCart = async(req,res) => {
+  try {
+    const user = req.user;
+    const cart = new Cart({
+      user: user.userId,
+     
+      productCart: [],
+    });
+    await cart.save();
+    res.status(200).json(cart);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}

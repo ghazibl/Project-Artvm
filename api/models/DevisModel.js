@@ -1,22 +1,29 @@
 import mongoose from "mongoose";
 
+
 const DevisSchema = new mongoose.Schema({
 
-    Commande : {
+    client : {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Commande'
+        ref: 'User'
     },
-    cart : {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Cart'
+    productCart : {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'ProductCart'
     },
-   message:{
-    type:String,
+    
+    messageAdmin:{
+        type : String,
+    },
 
-   },
-    PrixTotals : {
+    DateCreation:{
+        type: Date,
+        default: Date.now,
+        required: true,
+    },
+    PrixTotal : {
         type: Number,
-        required: true
+        
     },
     Remise : {
         type: Number,
@@ -25,22 +32,24 @@ const DevisSchema = new mongoose.Schema({
 
     PrixApresRemise : {
         type: Number,
-        required: true
+       
     },
     DateLivraison :{
         type: Date,
-       
-        required: true
+
     },
-    Status : {
+    QuantiteTotals : {
+        type: Number,
+        default: 0,
+    },
+    status : {
         type: String,
         default: 'En attente',
         required: true,
-        enum: [ 'confirmer', 'En attente', 'refuser']
+        enum: [ 'confirmer', 'En attente']
       },
+    
     });
-    
-    
     const Devis = mongoose.model('Devis', DevisSchema);
     
     export default Devis;

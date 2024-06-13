@@ -94,40 +94,76 @@ const Calendrier = () => {
     }
   };
   return (
-    <div className='w-3/4 mb-10'>
+    <div className='w-3/4 ml-10'>
       <h1 className="flex items-center text-3xl py-4 px-4"> 
         <FcCalendar size={38} className="mr-2" />
         Calendrier
       </h1>
       <div className="form-container">
-        {showModal && (
-          <div className="w-2/4">
-            <div className="modal-dialog bg-white rounded-lg overflow-hidden">
+      
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg overflow-hidden shadow-lg w-full max-w-md">
+            <div className="modal-dialog">
               <div className="modal-content">
-                <div className="modal-header  px-4 ">
-                  <h5 className="modal-title text-lg font-bold">{selectedEvent ? 'Modifier' : 'Ajouter un'} événement :</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                <div className="modal-header flex justify-between items-center px-4 py-2 border-b">
+                  <h5 className="modal-title text-lg font-bold">
+                    {selectedEvent ? 'Modifier' : 'Ajouter un'} événement :
+                  </h5>
+                  <button type="button" className="text-gray-400 hover:text-gray-500" onClick={() => setShowModal(false)}>
+                    <span className="material-icons">close</span>
+                  </button>
                 </div>
-                <div className="modal-body px-4 ">
+                <div className="modal-body px-4 py-4">
                   <label htmlFor="eventTitle" className="block mb-1">Titre de l'événement :</label>
-                  <input type="text" id="eventTitle" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-1 mb-2" />
-                  
+                  <input
+                    type="text"
+                    id="eventTitle"
+                    value={eventTitle}
+                    onChange={(e) => setEventTitle(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-1 mb-2"
+                  />
                   <label htmlFor="startDate" className="block mb-1">Date de début :</label>
-                  <input type="datetime-local" id="startDate" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-1 mb-2" />
-          
+                  <input
+                    type="datetime-local"
+                    id="startDate"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-1 mb-2"
+                  />
                   <label htmlFor="endDate" className="block mb-1">Date de fin :</label>
-                  <input type="datetime-local" id="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-1 mb-2" />
+                  <input
+                    type="datetime-local"
+                    id="endDate"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-1 mb-2"
+                  />
                 </div>
-                <div className="modal-footer flex justify-between px-4 py-2 mb-10">
+                <div className="modal-footer flex justify-between px-4 py-2 border-t">
                   {selectedEvent && (
-                    <button type="button" className="text-white bg-red-500 rounded-lg px-4 py-2" onClick={deleteEvent}>Supprimer</button>
+                    <button
+                      type="button"
+                      className="text-white bg-red-500 rounded-lg px-4 py-2"
+                      onClick={deleteEvent}
+                    >
+                      Supprimer
+                    </button>
                   )}
-                  <button type="button" className="text-white bg-blue-700 rounded-lg px-4 py-2" onClick={saveEvent}>{selectedEvent ? 'Enregistrer les modifications' : 'Enregistrer'}</button>
+                  <button
+                    type="button"
+                    className="text-white bg-blue-700 rounded-lg px-4 py-2"
+                    onClick={saveEvent}
+                  >
+                    {selectedEvent ? 'Enregistrer les modifications' : 'Enregistrer'}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </div>
       <div className="ml-10 ">
         <Fullcalendar

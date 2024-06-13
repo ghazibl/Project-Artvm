@@ -54,3 +54,18 @@ export const deleteEvent = async (req, res) => {
         res.status(500).json({ message: 'Error updating event' });
     }
 };
+export const checkEvents = async (notificationService) => {
+  try {
+    const now = new Date();
+    const events = await Event.find({ start: { $lte: now }, notified: false });
+
+    for (const event of events) {
+      notificationService.emit('eventNotification', { title: event.title, start: event.start });
+
+      event.notified = true;
+      await event.save();
+    }
+  } catch (error) {
+    console.error('Error checking events:', error);
+  }
+};

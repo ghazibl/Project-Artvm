@@ -1,33 +1,35 @@
-import express from 'express';
+import express from "express";
 import {
   createCommande,
-  getCommandeById,
-  updateCommande,
+  getCommndeEnAttente,
+  getCommandesByUser,
+  getCommandById,
   deleteCommande,
   updateCommandStatus,
   setStatusRefuser,
   setStatusConfirme,
-  getAllCommands
-} from '../controllers/CommandController.js'; 
+  getAllCommands,
+  getCommandes,
+  updateCommande
+} from "../controllers/CommandController.js";
+import { verifyToken } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
-
-router.post('/create', createCommande);
+router.post("/create", verifyToken, createCommande);
 //router.get('/:userId', getCommandesByUser);
 
+router.get("/attent", getCommndeEnAttente);
+router.get("/getAll", getAllCommands);
+router.get("/getByUser", verifyToken, getCommandesByUser);
+router.get("/totalCommandes", getCommandes);
 
-router.get('/commandes/:id', getCommandeById);
-router.get('/getAll', getAllCommands);
+router.put("/commandes/:id", updateCommandStatus);
+router.put("/confirm/:id", setStatusConfirme);
 
-// Route pour mettre à jour une commande
-router.put('/commandes/:id', updateCommande);
-router.put('/commandes/:id', updateCommandStatus);
-router.put('/confirm/:id', setStatusConfirme);
-
-// Route for setting command status to "refusé"
-router.put('/refuse/:id', setStatusRefuser);
-// Route pour supprimer une commande
-router.delete('/commandes/:id', deleteCommande);
+router.get("/:id", getCommandById);
+router.put("/refuse/:id", setStatusRefuser);
+router.put('/update/:id', updateCommande);
+router.delete("/:id", deleteCommande);
 
 export default router;

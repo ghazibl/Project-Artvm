@@ -44,9 +44,9 @@ export default function SignIn() {
       if (!res.ok) {
         throw new Error(data.message || 'Failed to sign in');
       }
-
+console.log(data);
       localStorage.setItem('token', data.token);
-
+localStorage.setItem("user", JSON.stringify(data));
       dispatch(signInSuccess(data));
       const isAdmin = data.isAdmin; // Assuming isAdmin is a boolean field in the response
       if (isAdmin) {
@@ -76,17 +76,18 @@ export default function SignIn() {
         <div className='flex-1'>
           <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
             <div>
-              <Label value='Your email' />
+              <Label value='Votre email' />
               <TextInput
                 type='email'
-                placeholder='name@company.com'
+                placeholder='nom@entreprise.com
+                '
                 id='email'
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
             <div>
-              <Label value='Your password' />
+              <Label value='Votre mot de passe' />
               <TextInput
                 type='password'
                 placeholder='**********'
@@ -106,15 +107,15 @@ export default function SignIn() {
                   <span className='pl-3'>Loading...</span>
                 </>
               ) : (
-                'Sign In'
+                'Se connecter'
               )}
             </Button>
             <OAuth />
           </form>
           <div className='flex gap-2 text-sm mt-5'>
-            <span>Don't have an account?</span>
+            <span>Vous n'avez pas de compte ?</span>
             <Link to='/sign-up' className='text-blue-500'>
-              Sign Up
+            S'inscrire
             </Link>
           </div>
           {errorMessage && (

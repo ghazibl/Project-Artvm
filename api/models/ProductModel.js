@@ -17,14 +17,14 @@ const productSchema = new mongoose.Schema({
         required: true },
     categorie: { 
         type: String, 
-        required: true },
+         },
     type: { 
         type: String },
     couleur: { 
         type: String },
     epaisseur: { 
         type: Number, 
-        required: true },
+         },
     image: { 
         type: String,
          required: true },

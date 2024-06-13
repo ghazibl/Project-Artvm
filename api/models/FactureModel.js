@@ -12,23 +12,43 @@ const FactureSchema = new mongoose.Schema(
 
     numero: {
       type: Number,
-      required: true,
+     
       unique: true,
     },
    
-    total: {
+   
+
+   TVA: {
+    type: Number,
+    required: true,
+  },
+   date: {
+        type: Date,
+        default : Date.now,
+        required: true
+
+    },
+    montantHT: {
       type: Number,
-      required: true
+      required: true,
     },
-    date: {
-      type: String,
-      required: true
+    montantTTC: {
+      type: Number,
+      required: true,
     },
-    livraison: {
-      type: Boolean,
-      required: false
+    remise: {
+      type: Number,
+      default: 0,
+    },
+    fraisLivraison: {
+      type: Number,
+      default: 0,
+    },
+    prixRestant :{
+      type: Number,
     }
   },
+
  
 );
 FactureSchema.statics.getNextNumero = async function () {

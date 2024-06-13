@@ -1,6 +1,56 @@
 import Product from '../models/ProductModel.js';
 import mongoose from 'mongoose';
+import FactureAchat from '../models/ProduitAchatModel.js';
 
+
+export const createProductAchat = async (req, res) => {
+  try {
+    const { nomFournisseur, dateAchat, tvaAchat, products, prixTotal } = req.body;
+
+    const productsNotFound = [];
+
+    const newFactureAchat = new FactureAchat({
+      nomFournisseur,
+      dateAchat,
+      tvaAchat,
+      products,
+      prixTotal
+    });
+
+    await newFactureAchat.save();
+
+    // Update the quantity of each product in the inventory
+    for (const product of products) {
+      let existingProduct;
+
+      if (product.categorie === 'accessoire') {
+        existingProduct = await Product.findOne({ nom: product.nom });
+      } else {
+        existingProduct = await Product.findOne({ nom: product.nom, epaisseur: product.epaisseur });
+      }
+
+      if (existingProduct) {
+        existingProduct.quantite += Number(product.quantite); // Ensure quantite is a number
+        await existingProduct.save();
+      } else {
+        productsNotFound.push(product.nom);
+      }
+    }
+
+    res.status(201).json({ factureAchat: newFactureAchat, productsNotFound });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+export const getProductAchat = async (req, res) => {
+  try {
+    const productsAchat = await FactureAchat.find();
+    res.status(200).json(productsAchat);
+  } catch (error) {
+    console.error('Error getting products:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 export const createProduct = async (req, res) => {
     try {
       const {
@@ -41,8 +91,44 @@ export const createProduct = async (req, res) => {
     }
 };
 
+export const getAccessories = async (req, res) => {
+  try {
+    const accessories = await Product.find({ type: 'accessoire' });
+    res.status(200).json(accessories);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des accessoires :', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des accessoires' });
+  }
+};
+export const getAccessById = async (req, res) => {
+  try {
+      const { acessId } = req.params; // ID du produit à récupérer
 
-  
+      if (!mongoose.Types.ObjectId.isValid(acessId)) {
+          return res.status(404).json({ message: "ID du produit invalide." });
+      }
+
+      const acess = await Product.find({ type: 'accessoire' });
+
+      if (!acess) {
+          return res.status(404).json({ message: "Produit non trouvé." });
+      }
+
+      res.status(200).json(acess);
+  } catch (error) {
+      console.error("Erreur lors de la récupération du produit par ID :", error);
+      res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+};
+export const getByProduct = async (req, res) => {
+  try {
+    const products = await Product.find({  type: 'product' });
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des products :', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des products' });
+  }
+};
   
   export const getProduct = async (req, res) => {
     try {
@@ -120,5 +206,26 @@ export const getProductById = async (req, res) => {
   } catch (error) {
       console.error("Erreur lors de la récupération du produit par ID :", error);
       res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+};
+
+export const getQuantiteProduitParCategoties = async (req, res) => {
+  try {
+    const categories = await Product.aggregate([
+      {
+        $match: { categorie: { $ne: '' } } // Exclude empty categories
+      },
+      {
+        $group: {
+          _id: "$categorie",
+          totalQuantite: { $sum: "$quantite" }
+        }
+      }
+    ]);
+
+      res.status(200).json(categories);
+  } catch (error) {
+      console.error('Erreur lors de la récupération de la quantité de produit par catégorie :', error);
+      res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 };

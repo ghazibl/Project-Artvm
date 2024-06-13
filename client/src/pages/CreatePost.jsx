@@ -7,7 +7,7 @@ import {
   ref,
   uploadBytesResumable,
 } from 'firebase/storage';
-import { app } from '../firebase';
+import { app } from '../firebase'; // Ensure this import is correct
 import { useState } from 'react';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -17,12 +17,20 @@ export default function CreatePost() {
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    title: '',
+    category: '',
+    height: '',
+    width: '',
+    quantity: '',
+    content: '',
+    image: ''
+  });
   const [publishError, setPublishError] = useState(null);
 
   const navigate = useNavigate();
 
-  const handleUpdloadImage = async () => {
+  const handleUploadImage = async () => {
     try {
       if (!file) {
         setImageUploadError('Please select an image');
@@ -48,7 +56,7 @@ export default function CreatePost() {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             setImageUploadProgress(null);
             setImageUploadError(null);
-            setFormData({ ...formData, image: downloadURL });
+            setFormData((prevFormData) => ({ ...prevFormData, image: downloadURL }));
           });
         }
       );
@@ -58,10 +66,11 @@ export default function CreatePost() {
       console.log(error);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/post/create', {
+      const res = await fetch('http://localhost:3000/api/post/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,39 +82,40 @@ export default function CreatePost() {
         setPublishError(data.message);
         return;
       }
-
-      if (res.ok) {
-        setPublishError(null);
-        navigate(`/post/${data.slug}`);
-      }
+      setPublishError(null);
+      navigate(`/dashboard?tab=dashUser`); 
     } catch (error) {
       setPublishError('Something went wrong');
     }
   };
+
   return (
     <div className='p-3 max-w-3xl mx-auto min-h-screen'>
-      <h1 className='text-center text-3xl my-7 font-semibold'>Create a post</h1>
+      <h1 className='text-center text-3xl my-7 font-semibold'>Ajouter Produit pour filtrage</h1>
       <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
         <div className='flex flex-col gap-4 sm:flex-row justify-between'>
           <TextInput
             type='text'
-            placeholder='Title'
+            placeholder='Nom'
             required
             id='title'
             className='flex-1'
+            value={formData.title}
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
           />
           <Select
+            required
+            value={formData.category}
             onChange={(e) =>
               setFormData({ ...formData, category: e.target.value })
             }
           >
-            <option value='uncategorized'>Select a category</option>
-            <option value='javascript'>JavaScript</option>
-            <option value='reactjs'>React.js</option>
-            <option value='nextjs'>Next.js</option>
+            <option value=''>Choisir une catégorie</option>
+            <option value='miroir'>Miroir</option>
+            <option value='lisse'>Lisse</option>
+            <option value='chagrin'>Chagrin</option>
           </Select>
         </div>
         <div className='flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3'>
@@ -119,8 +129,8 @@ export default function CreatePost() {
             gradientDuoTone='purpleToBlue'
             size='sm'
             outline
-            onClick={handleUpdloadImage}
-            disabled={imageUploadProgress}
+            onClick={handleUploadImage}
+            disabled={!!imageUploadProgress}
           >
             {imageUploadProgress ? (
               <div className='w-16 h-16'>
@@ -130,7 +140,7 @@ export default function CreatePost() {
                 />
               </div>
             ) : (
-              'Upload Image'
+              'Télécharger une image'
             )}
           </Button>
         </div>
@@ -142,17 +152,47 @@ export default function CreatePost() {
             className='w-full h-72 object-cover'
           />
         )}
+        <div className='flex flex-col sm:flex-row justify-between gap-4'>
+          <TextInput
+            type='text'
+            placeholder='Hauteur en mètre'
+            required
+            value={formData.height}
+            onChange={(e) =>
+              setFormData({ ...formData, height: e.target.value })
+            }
+          />
+          <TextInput
+            type='text'
+            placeholder='Largeur en mètre'
+            required
+            value={formData.width}
+            onChange={(e) =>
+              setFormData({ ...formData, width: e.target.value })
+            }
+          />
+          <TextInput
+            type='number'
+            placeholder='Quantité'
+            required
+            value={formData.quantity}
+            onChange={(e) =>
+              setFormData({ ...formData, quantity: e.target.value })
+            }
+          />
+        </div>
         <ReactQuill
           theme='snow'
-          placeholder='Write something...'
+          placeholder="Plus d'information..."
           className='h-72 mb-12'
+          value={formData.content}
           required
           onChange={(value) => {
             setFormData({ ...formData, content: value });
           }}
         />
         <Button type='submit' gradientDuoTone='purpleToPink'>
-          Publish
+          Envoyer
         </Button>
         {publishError && (
           <Alert className='mt-5' color='failure'>

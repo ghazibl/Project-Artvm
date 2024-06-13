@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { HiClipboardDocumentList } from "react-icons/hi2";
-
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { app } from '../../firebase.js';
+import toast, { Toaster } from 'react-hot-toast';
+import { MdAddPhotoAlternate } from "react-icons/md";
 
 function AjoutProduit() {
   const [nom, setNom] = useState('');
   const [categorie, setCategorie] = useState('');
   const [epaisseur, setEpaisseur] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState('product');
   const [couleur, setCouleur] = useState('');
   const [description, setDescription] = useState('');
   const [prix, setPrix] = useState('');
@@ -29,7 +32,7 @@ function AjoutProduit() {
       setCategorie(value);
       // Reset other fields when category changes
       setNom('');
-      setType('');
+      
       setCouleur('');
       updateNomOptions(value);
     } 
@@ -55,9 +58,7 @@ function AjoutProduit() {
           case 'epaisseur':
             setEpaisseur(value);
             break;
-          case 'type':
-            setType(value);
-            break;
+          
           case 'couleur':
             setCouleur(value);
             break;
@@ -103,7 +104,7 @@ function AjoutProduit() {
     setNom('');
     setCategorie('');
     setEpaisseur('');
-    setType('');
+    
     setCouleur('');
     setDescription('');
     setPrix('');
@@ -145,13 +146,14 @@ function AjoutProduit() {
         })
         .then((response) => {
             console.log('Response from server:', response);
-            
+            toast.success("Produit ajouter avec sucess")
                 setSuccess(true);
                 resetInputs();
             
         })
         .catch((error) => {
             console.error('Error:', error);
+            toast.error("Une erreur s\'est produite lors de l\'ajout du produit.")
             setImageUploadError('Image upload failed');
             setError('Une erreur s\'est produite lors de l\'ajout du produit.');
         });
@@ -159,15 +161,93 @@ function AjoutProduit() {
       console.error('Error:', error);
     }
   };
-  
+
   return (
-    <div className="max-w-2xl mx-auto p-4">
-   <div className="flex items-center justify-between mb-8">
+    <div className="w-2/4 mx-auto p-4">
+      <Toaster/>
+   <div className="flex items-center justify-between ">
         <h2 className="text-2xl font-bold">Ajouter produit</h2>
-        <a href='/dashboard?tab=AjoutAccessoire' className="text-blue-500 text-3xl">Accessoire</a>
-        <a href='/dashboard?tab=ListProduct' className="text-blue-500 text-3xl"><HiClipboardDocumentList /></a>
+        <a href='/dashboard?tab=AjoutAccessoire' className="px-10 text-lg text-gray-500 flex"><MdAddPhotoAlternate className='text-3xl'/> Exemple de projet </a>
+        <a href='/dashboard?tab=ListProduct' className="text-blue-500 text-4xl"><HiClipboardDocumentList /></a>
+        
       </div>
-      <form onSubmit={handleSubmit} encType="multipart/form-data" className="mt-4">
+    
+      {error && <p className="text-red-500">{error}</p>}
+            <form onSubmit={handleSubmit} className="mb-2 mt-4">
+             
+                    <label className="block mb-2">Type:</label>
+                    <select value={type} onChange={(e) => setType(e.target.value)} required className="block w-full  p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="product">Produit</option>
+                        <option value="accessoire">Accessoire</option>
+                        
+                    </select>
+               
+                {type === 'accessoire' && (
+                    <>
+                        <div>
+                            <label className="block mb-1">Nom:</label>
+                            <input type="text" value={nom} placeholder="Prix en DT" onChange={(e) => setNom(e.target.value)} required className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        </div>
+                        <div>
+                            <label className="block mb-1">Description:</label>
+                            <textarea value={description} placeholder="Entrez la description" onChange={(e) => setDescription(e.target.value)} required className="block w-full mt-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400" />
+                        </div>
+                        <div>
+                            <label className="block mb-1">Prix:</label>
+                            <input type="number" value={prix} placeholder="Entrez le prix" onChange={(e) => setPrix(e.target.value)} className="border border-gray-300 rounded-md px-3 py-2 w-full" />
+                        </div>
+                        <div>
+                            <label className="block mb-1">Quantité:</label>
+                            <input type="number" value={quantite} placeholder="Entrez la quantité" onChange={(e) => setQuantite(e.target.value)} className="border border-gray-300 rounded-md px-3 py-2 w-full" />
+                        </div>
+                        <div className="w-full px-2 mb-4">
+            <label className="block mb-2">Image:</label>
+            <input
+              type="file"
+              name="image"
+              onChange={handleChange}
+              className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
+            />
+          </div>
+          <div className="w-full px-2 mb-4">
+          <label className="block mb-2">Statut:</label>
+          <select
+            name="status"
+            value={status}
+            onChange={handleChange}
+            required
+            className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
+          >
+            <option value="">Sélectionner un statut</option>
+            <option value="En stock">En stock</option>
+            <option value="Épuisé">Épuisé</option>
+            {/* Ajoutez d'autres options de statut au besoin */}
+          </select>
+        </div>
+              
+        {error && <p className="text-white bg-red-500 px-2 py-2">{error}</p>}
+        <div className="flex justify-between py-2">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-400"
+          >
+            Ajouter
+          </button>
+          <button
+            type="button"
+            className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400 focus:outline-none focus:ring focus:ring-gray-400"
+            onClick={resetInputs}
+          >
+            Annuler
+          </button>
+        </div>
+                    </>
+                )}
+                </form>
+                {type === 'product' && (
+                  <>
+      <form onSubmit={handleSubmit} encType="multipart/form-data" >
         <label className="block mb-2">
           Catégorie:
           <select
@@ -184,7 +264,7 @@ function AjoutProduit() {
           </select>
         </label>
         <div className="flex flex-wrap -mx-2">
-          <div className="w-full md:w-1/2 px-2 mb-4">
+          <div className="w-full md:w-1/2 px-2 ">
             <label className="block mb-2">Nom:</label>
             <select
               name="nom"
@@ -211,7 +291,7 @@ function AjoutProduit() {
             )}
           </div>
           <div className="w-full md:w-1/2 px-2 mb-4">
-            <label className="block mb-2">Épaisseur (mm):</label>
+            <label className="block mb-2">Épaisseur :</label>
             <select
                 name="epaisseur"
                 value={epaisseur}
@@ -226,28 +306,9 @@ function AjoutProduit() {
                 <option value="10">10 mm</option>
             </select>
             </div>
-          <div className="w-full md:w-1/2 px-2 mb-4">
-            <label className="block mb-2">Type:</label>
-            <input
-              type="text"
-              name="type"
-              value={type}
-              onChange={handleChange}
-              placeholder="Entrez le type"
-              className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            />
-          </div>
-          <div className="w-full md:w-1/2 px-2 mb-4">
-            <label className="block mb-2">Couleur:</label>
-            <input
-              type="text"
-              name="couleur"
-              value={couleur}
-              onChange={handleChange}
-              placeholder="Entrez la couleur"
-              className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            />
-          </div>
+           
+
+   
           <div className="w-full px-2 mb-4">
             <label className="block mb-2">Description:</label>
             <input
@@ -266,12 +327,12 @@ function AjoutProduit() {
               name="prix"
               value={prix}
               onChange={handleChange}
-              placeholder="Entrez le prix"
+              placeholder="Prix en DT"
               className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             />
           </div>
-          <div className="w-full md:w-1/2 px-2 mb-4">
-            <label className="block mb-2">Quantité:</label>
+          <div className="w-full md:w-1/2 px-2 mb-2">
+            <label className="block ">Quantité:</label>
             <input
               type="text"
               name="quantite"
@@ -281,7 +342,7 @@ function AjoutProduit() {
               className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             />
           </div>
-          <div className="w-full px-2 mb-4">
+          <div className="w-full px-2 mb-2">
             <label className="block mb-2">Image:</label>
             <input
               type="file"
@@ -290,7 +351,7 @@ function AjoutProduit() {
               className="block w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-400"
             />
           </div>
-          <div className="w-full px-2 mb-4">
+          <div className="w-full px-2 ">
           <label className="block mb-2">Statut:</label>
           <select
             name="status"
@@ -306,10 +367,8 @@ function AjoutProduit() {
           </select>
         </div>
         </div>
-        {success && <p className="bg-green-200 text-green-800 px-4 py-2 rounded-md p-2">
-            Le produit est ajouter avec success.
-        </p>}
-        {error && <p className="text-white bg-red-500 px-2 py-2">{error}</p>}
+        
+        
         <div className="flex justify-between py-2">
           <button
             type="submit"
@@ -325,7 +384,11 @@ function AjoutProduit() {
             Annuler
           </button>
         </div>
-      </form>
+      
+     
+                </form>
+                </>
+                )}
     </div>
   );
  

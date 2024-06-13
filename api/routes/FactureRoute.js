@@ -1,20 +1,19 @@
 import express from 'express';
 import {
-  createFacture,
-  deleteFacture ,
-  updateFacture ,
-  getFactures,
+  createFacture, getAllFacture,getFactureById,getFactureByUser,updateFacture
   
 
 } from '../controllers/FactureController.js';
+import { verifyToken } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
-router.post('/create',  createFacture);
-router.get('/', getFactures);
+router.post('/', createFacture); 
+router.get('/', getAllFacture); 
+router.get('/:id', getFactureById);
+router.get('/user/:userId',verifyToken, getFactureByUser);
+router.put('/:id', updateFacture);
 
-router.put('/:factureId',  updateFacture);
-router.delete('/:factureId', deleteFacture);
 
 
 export default router;

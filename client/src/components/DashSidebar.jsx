@@ -54,7 +54,29 @@ export default function DashSidebar() {
                 icon={HiChartPie}
                 as='div'
               >
-                Dashboard
+                Tableau de bord
+              </Sidebar.Item>
+            </Link>
+          )}
+          {currentUser && !currentUser.isAdmin && (
+            <Link to='/dashboard?tab=dashUser'>
+              <Sidebar.Item
+                active={tab === 'dashUser' || !tab}
+                icon={HiChartPie}
+                as='div'
+              >
+                Tableau de bord
+              </Sidebar.Item>
+            </Link>
+          )}
+                     {!currentUser.isAdmin && (
+            <Link to='/dashboard?tab=create-post'>
+              <Sidebar.Item
+                active={tab === 'create-post'}
+                icon={IoIosAddCircle  }
+                as='div'
+              >
+                Produit pour filtrage
               </Sidebar.Item>
             </Link>
           )}
@@ -68,7 +90,8 @@ export default function DashSidebar() {
             >
               Profile
             </Sidebar.Item>
-          </Link>
+            </Link>
+ 
           {currentUser.isAdmin && (
             <Link to='/dashboard?tab=Calendrier'>
               <Sidebar.Item
@@ -80,15 +103,26 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Link>
           )}
+              {currentUser.isAdmin && (
+            <Link to='/dashboard?tab=addfacture'>
+              <Sidebar.Item
+                active={tab === 'addfacture'}
+                icon={IoIosAddCircle}
+                as='div'
+              >
+                Ajouter Facture achats
+              </Sidebar.Item>
+            </Link>
+          )}
          
           {currentUser.isAdmin && (
-            <Link to='/dashboard?tab=posts'>
+            <Link to='/dashboard?tab=factAchat'>
               <Sidebar.Item
-                active={tab === 'posts'}
+                active={tab === 'factAchat'}
                 icon={HiDocumentText}
                 as='div'
               >
-                Posts
+                Liste Factures achats
               </Sidebar.Item>
             </Link>
           )}
@@ -126,17 +160,7 @@ export default function DashSidebar() {
             </Link>
           )}
           
-           {currentUser.isAdmin && (
-            <Link to='/dashboard?tab=addfacture'>
-              <Sidebar.Item
-                active={tab === 'addfacture'}
-                icon={IoIosAddCircle}
-                as='div'
-              >
-                Ajouter Facture
-              </Sidebar.Item>
-            </Link>
-          )}
+           
           {currentUser.isAdmin && (
             <Link to='/dashboard?tab=Listfacture'>
               <Sidebar.Item
@@ -156,7 +180,7 @@ export default function DashSidebar() {
                   icon={HiOutlineUserGroup}
                   as='div'
                 >
-                  Users
+                  Utilisateurs
                 </Sidebar.Item>
               </Link>
               <Link to='/dashboard?tab=comments'>
@@ -165,7 +189,7 @@ export default function DashSidebar() {
                   icon={HiAnnotation}
                   as='div'
                 >
-                  Comments
+                  Messages
                 </Sidebar.Item>
               </Link>
             </>
@@ -175,7 +199,7 @@ export default function DashSidebar() {
             className='cursor-pointer'
             onClick={handleSignout}
           >
-            Sign Out
+            Déconnecter
           </Sidebar.Item>
         </Sidebar.ItemGroup>
       </Sidebar.Items>
