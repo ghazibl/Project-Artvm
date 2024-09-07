@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { FaComments } from "react-icons/fa";
 
 const ContactComp = () => {
   const [contacts, setContacts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const contactsPerPage = 6;
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -38,12 +41,40 @@ const ContactComp = () => {
     }
   };
 
+  // Calculate the current contacts to display
+  const indexOfLastContact = currentPage * contactsPerPage;
+  const indexOfFirstContact = indexOfLastContact - contactsPerPage;
+  const currentContacts = contacts.slice(indexOfFirstContact, indexOfLastContact);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(contacts.length / contactsPerPage);
+
+  // Render pagination controls
+  const renderPagination = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setCurrentPage(i)}
+          className={`px-4 py-2 mx-1 ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        >
+          {i}
+        </button>
+      );
+    }
+    return pages;
+  };
+
   return (
     <div className="container mx-auto py-16">
       <div className="w-full md:w-3/4 mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-blue-700 py-4">Liste de messages </h1>
+      <h1 className="text-3xl font-bold mb-8 text-blue-700 py-4 flex items-center">
+  <FaComments className='mr-2' />
+  Liste de messages
+</h1>
         <ul>
-          {contacts.map(contact => (
+          {currentContacts.map(contact => (
             <li key={contact._id} className="mb-4 p-4 bg-blue-100 rounded-lg">
               <div className='flex flex-col md:flex-row md:items-center justify-between'>
                 <div className="flex flex-col mb-4 md:mb-0 md:mr-4">
@@ -60,6 +91,9 @@ const ContactComp = () => {
             </li>
           ))}
         </ul>
+        <div className="mt-4 flex justify-center">
+          {renderPagination()}
+        </div>
       </div>
     </div>
   );

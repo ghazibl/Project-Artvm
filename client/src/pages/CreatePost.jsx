@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { useNavigate } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function CreatePost() {
   const [file, setFile] = useState(null);
@@ -69,19 +70,29 @@ export default function CreatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || !user.userId) {
+      setPublishError('User is not logged in or user ID is missing.');
+      toast.error('Échec de ajout du produit');
+      return;
+    }
+
+    const formDataWithUser = { ...formData, user: user.userId  };
+
     try {
       const res = await fetch('http://localhost:3000/api/post/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formDataWithUser),
       });
       const data = await res.json();
       if (!res.ok) {
         setPublishError(data.message);
         return;
       }
+      toast.success("Produit ajouté avec succès");
       setPublishError(null);
       navigate(`/dashboard?tab=dashUser`); 
     } catch (error) {
@@ -91,6 +102,7 @@ export default function CreatePost() {
 
   return (
     <div className='p-3 max-w-3xl mx-auto min-h-screen'>
+      <Toaster/>
       <h1 className='text-center text-3xl my-7 font-semibold'>Ajouter Produit pour filtrage</h1>
       <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
         <div className='flex flex-col gap-4 sm:flex-row justify-between'>
@@ -199,6 +211,7 @@ export default function CreatePost() {
             {publishError}
           </Alert>
         )}
+        <Toaster />
       </form>
     </div>
   );

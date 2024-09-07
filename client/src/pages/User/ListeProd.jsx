@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from 'flowbite-react'; // Ajuster l'import selon la structure de votre projet
+import { Button } from 'flowbite-react'; // Adjust import according to your project structure
 import { IoMdSearch } from "react-icons/io";
 
 const ListeProd = () => {
@@ -18,7 +18,7 @@ const ListeProd = () => {
           setProducts(data);
         }
       } catch (error) {
-        console.error('Error fetching produits:', error);
+        console.error('Error fetching products:', error);
       }
     };
     fetchProducts();
@@ -86,23 +86,23 @@ const ListeProd = () => {
         {filteredProducts.map(product => (
           <div key={product._id} className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
             <img src={product.image} alt={product.nom} className="rounded-t-lg w-full h-45 object-cover bg-gray-500" />
-            <div className="p-5 flex flex-col h-full">
+            <div className="p-5 flex flex-col">
               <div className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {product.nom}
               </div>
               <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
                 {product.description}
               </p>
-              <div className="flex justify-between">
-                <p className="mb-3 font-bold text-gray-700 dark:text-gray-400">
+              <div className="flex justify-between mb-3">
+                <p className="font-bold text-gray-700 dark:text-gray-400">
                   {product.prix} DT
                 </p>
-                <p className={`mb-2 text-xl font-bold ${product.status === 'En stock' ? 'text-green-500' : 'text-red-500'} dark:text-white`}>
+                <p className={`text-xl font-bold ${product.status === 'En stock' ? 'text-green-500' : 'text-red-500'} dark:text-white`}>
                   {product.status}
                 </p>
               </div>
-              <Link to={`/product/${product._id}`} className="mt-auto">
-                <Button gradientDuoTone='blueToBlue' className='bg-blue-600 text-white w-full' rounded outline={true}>
+              <Link to={`/product/${product._id}`}>
+                <Button gradientDuoTone='blueToBlue' className='bg-blue-600 text-white w-full' rounded outline>
                   Acheter
                 </Button>
               </Link>

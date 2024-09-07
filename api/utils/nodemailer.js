@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendConfirmEmail = (email, activationCode) => {
     const mailOptions = {
-        from: "ghazibelhadj506@gmail.com",
+        from: "ghazibelhadj@gmail.com",
         to: email,
         subject: "Activation de votre compte",
         html: `

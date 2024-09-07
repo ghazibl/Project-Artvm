@@ -47,7 +47,7 @@ export default function Header() {
       };
       fetchUserInfo();
     }
-  }, []);
+  }, [currentUser]);
 
   const handleSignout = async () => {
     try {
@@ -104,9 +104,7 @@ export default function Header() {
       </Link>
       
       <SearchComponent/>
-      <Button className='w-12 h-10 lg:hidden' color='gray' pill>
-        <AiOutlineSearch />
-      </Button>
+     
       <div className='flex gap-2 md:order-2'>
      {currentUser && !currentUser.isAdmin ?( <Link
         to="/cart"

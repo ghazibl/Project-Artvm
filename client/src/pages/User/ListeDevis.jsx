@@ -3,7 +3,6 @@ import axios from 'axios';
 import Modal from 'react-modal';
 import toast, { Toaster } from 'react-hot-toast';
 
-// Définir l'élément de l'application pour react-modal
 Modal.setAppElement('#root');
 
 const ListDevis = () => {
@@ -14,24 +13,26 @@ const ListDevis = () => {
   const [address, setAddress] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [editDevi, setEditDevi] = useState(null);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const devisPerPage = 10;
+  const fetchDevis = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/api/devis/getDevisByUser', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const reversedDevisList = response.data.devisList.reverse();
+      setDevisList(reversedDevisList);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching commandes:', error);
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchDevis = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/devis/getDevisByUser', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const reversedDevisList = response.data.devisList.reverse();
-        setDevisList(reversedDevisList);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching commandes:', error);
-        setIsLoading(false);
-      }
-    };
+   
 
     fetchDevis();
   }, []);
@@ -97,39 +98,42 @@ const ListDevis = () => {
   };
 
   const handleUpdate = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const updatedProductCart = editDevi.productCart.map(item => ({
-        ...item,
-        hauteur: item.product && item.product.type === 'product' ? item.hauteur : null,
-        largeur: item.product && item.product.type === 'product' ? item.largeur : null,
-        quantite: item.quantite,
-      }));
-      console.log(updatedProductCart.hauteur);
-      const response = await axios.put(`http://localhost:3000/api/devis/${editDevi._id}`, {
-        productCart: updatedProductCart,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
-      toast.success("Devis modifié avec succès");
-      setDevisList(devisList.map(devi => devi._id === editDevi._id ? response.data : devi));
-     
-      console.log(devisList);
-      
-      closeEditModal();
-      
-    } catch (error) {
-      console.error('Error updating devis:', error);
-      toast.error("Erreur lors de la modification du devis");
-    }
-  };
+  try {
+    const token = localStorage.getItem('token');
+    const updatedProductCart = editDevi.productCart.map(item => ({
+      ...item,
+      hauteur: item.product && item.product.type === 'product' ? item.hauteur : null,
+      largeur: item.product && item.product.type === 'product' ? item.largeur : null,
+      quantite: item.quantite,
+    }));
+
+    const response = await axios.put(`http://localhost:3000/api/devis/${editDevi._id}`, {
+      productCart: updatedProductCart,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Mise à jour de l'état local avec le devis modifié
+    setDevisList(prevDevisList => {
+      return prevDevisList.map(devi =>
+        devi._id === editDevi._id ? response.data : devi
+      );
+    });
+
+    toast.success("Devis modifié avec succès");
+
+    closeEditModal();
+    fetchDevis();
+  } catch (error) {
+    console.error('Error updating devis:', error);
+    toast.error("Erreur lors de la modification du devis");
+  }
+};
 
   const openEditModal = (devi) => {
     setEditDevi(devi);
-    console.log(devi);
   };
 
   const closeEditModal = () => {
@@ -144,75 +148,80 @@ const ListDevis = () => {
     }
   };
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const indexOfLastDevi = currentPage * devisPerPage;
+  const indexOfFirstDevi = indexOfLastDevi - devisPerPage;
+  const currentDevis = devisList.slice(indexOfFirstDevi, indexOfLastDevi);
+  const totalPages = Math.ceil(devisList.length / devisPerPage);
+
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <Toaster />
-      <h1 className="text-2xl font-bold mb-6">Mes Devis</h1>
-      {isLoading ? (
-        <p className="text-gray-500">Chargement des devis...</p>
-      ) : devisList.length === 0 ? (
-        <p className="text-gray-500">Vous n'avez pas encore de devis.</p>
-      ) : (
-        <div className="space-y-6">
-          {devisList.map((devi) => (
-            <div key={devi._id} className="bg-gray-100 rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-gray-700 font-bold">Devis du {new Date(devi.DateCreation).toLocaleDateString('fr-FR')}</p>
-                </div>
-                <p className="text-gray-700 font-bold">Status : {devi.status}</p>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-bold">Produits commandés:</h3>
-                <ul className="list-disc pl-6 space-y-2">
-                  {devi.productCart.map((item) => (
-                    <li key={item._id}>
-                      {item.product && item.product.type === "product" && (
-                        <>
-                          {item.product.nom} - Quantité: {item.quantite} - hauteur {item.hauteur} m - 
-                          largeur { item.largeur} m - Prix Totale : { item.prixCart} DT
-                        </>
-                      )}
-                      {item.product && item.product.type === "accessoire" && (
-                        <>
-                          {item.product.nom} - Quantité: {item.quantite} - 
-                          Prix Totale : { item.prixCart} DT
-                        </>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                {devi.status === "confirmer" && (
-                  <div className="flex justify-end mt-4">
-                    <button
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-                      onClick={() => openModal(devi)}
-                    >
-                      Détail
-                    </button>
-                  </div>
-                )}
-                {devi.status === "En attente" && (
-                  <div className="flex justify-end mt-4">
-                    <button
-                      className="bg-green-500 text-white px-2 py-1 rounded-lg mr-2"
-                      onClick={() => openEditModal(devi)}
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      className="bg-red-600 text-white px-2 py-1 rounded-lg "
-                      onClick={() => handleDelete(devi._id)}
-                    >
-                      Supprimer
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+    <Toaster />
+    <h1 className="text-2xl font-bold mb-6">Mes Devis</h1>
+    {isLoading ? (
+      <p className="text-gray-500">Chargement des devis...</p>
+    ) : devisList.length === 0 ? (
+      <p className="text-gray-500">Vous n'avez pas encore de devis.</p>
+    ) : (
+      <div className="space-y-6">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date du devis</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produits commandés</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {currentDevis.map((devi) => (
+              <tr key={devi._id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{new Date(devi.DateCreation).toLocaleDateString('fr-FR')}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${devi.status === 'confirmer' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {devi.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <ul className="list-disc pl-4">
+                    {devi.productCart.map(item => (
+                      <li key={item._id}>
+                        <span className="font-bold">{item.product.nom}</span>
+                        {item.product.type === 'product' && (
+                          <span> - Dimension: {item.hauteur}m x {item.largeur}m</span>
+                        )}
+                        <span> - Quantité: {item.quantite}</span>
+                        <span> - Prix Total: {item.prixCart} DT</span>
+                      </li>
+                    ))}
+                  </ul>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
+                  {devi.status === 'confirmer' && (
+                    <>
+                      <button className="text-indigo-600 hover:text-indigo-900 mr-2" onClick={() => openModal(devi)}>Détail</button>
+                      <button className="text-red-600 hover:text-red-900" onClick={() => handleDelete(devi._id)}>Supprimer</button>
+                    </>
+                  )}
+                  {devi.status === 'En attente' && (
+                    <>
+                      <button className="text-green-600 hover:text-green-900 mr-2" onClick={() =>openEditModal(devi)}>Modifier</button>
+                        <button className="text-red-600 hover:text-red-900" onClick={() => handleDelete(devi._id)}>Supprimer</button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
+
 
       {selectedDevi && (
         <Modal
@@ -222,13 +231,14 @@ const ListDevis = () => {
           contentLabel="Devi Details"
         >
           <div className="bg-white rounded-lg p-6 max-w-lg mx-auto">
-            <h2 className="text-xl text-blue-700 font-bold mb-4">Détails du Devis</h2>
-            <div className="flex justify-between mt-4">
+            <h2 className="text-xl text-blue-700 font-bold mb-4"> Détails du Devis</h2>
+            <div className="mt-4">
               <p><strong>Remise:</strong> {selectedDevi.Remise}%</p>
               <p><strong>Prix Total:</strong> {selectedDevi.PrixApresRemise} DT</p>
             </div>
             <p><strong>Date de Livraison:</strong> {new Date(selectedDevi.DateLivraison).toLocaleDateString('fr-FR')}</p>
             <div>
+              <p className='text-blue-600 font-semibold'>Veuillez saisir ces informations avant de passer la commande</p>
               <label>Adresse:</label>
               <input
                 type="text"
@@ -246,39 +256,37 @@ const ListDevis = () => {
                 className="block w-full mt-1 p-2 border rounded"
               />
             </div>
-            <div>
-              <label>Livraison:</label>
-              <div className="flex items-center mt-2">
-                <label className="mr-4">
-                  <input
-                    type="radio"
-                    name="livraison"
-                    value="oui"
-                    checked={livraison === true}
-                    onChange={handleRadioChange}
-                    className="mr-2"
-                  />
-                  Oui
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="livraison"
-                    value="non"
-                    checked={livraison === false}
-                    onChange={handleRadioChange}
-                    className="mr-2"
-                  />
-                  Non
-                </label>
-              </div>
+            <div className='flex items-center mt-2'>
+              <label className='mr-4'>Livraison:</label>
+              <label className="mr-4">
+                <input
+                  type="radio"
+                  name="livraison"
+                  value="oui"
+                  checked={livraison === true}
+                  onChange={handleRadioChange}
+                  className="mr-2"
+                />
+                Oui
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="livraison"
+                  value="non"
+                  checked={livraison === false}
+                  onChange={handleRadioChange}
+                  className="mr-2"
+                />
+                Non
+              </label>
             </div>
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-between mt-4">
               <button
-                className="bg-blue-600 text-white px-3 py-1 rounded-lg mr-2"
+                className="bg-blue-600 text-white px-3 py-1 rounded-lg "
                 onClick={handleConfirm}
               >
-                Confirmer
+                Passer Commande
               </button>
               <button
                 className="bg-gray-300 text-gray-700 px-3 py-1 rounded-lg"
@@ -361,6 +369,20 @@ const ListDevis = () => {
             </div>
           </div>
         </Modal>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center mt-6">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-3 py-1 mx-1 rounded ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

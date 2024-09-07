@@ -6,26 +6,15 @@ import Contact from '../components/Map/Contact';
 import CallToAccessoire from '../components/CallAccessoire';
 import CallToProject from '../components/CallToProject';
 import { CiDiscount1 } from "react-icons/ci";
-
-
-
-
 import g from '../assets/image7.jpg';
-
 import i from '../assets/image9.jpg';
 import v from '../assets/image10.jpg';
+
 export default function Home() {
   const [posts, setPosts] = useState([]);
-  const images = [i,v,g];
+  const images = [i,v];
   const [currentIndex, setCurrentIndex] = useState(0);
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await fetch('/api/post/getPosts');
-      const data = await res.json();
-      setPosts(data.posts);
-    };
-    fetchPosts();
-  }, []);
+
 
 
   useEffect(() => {

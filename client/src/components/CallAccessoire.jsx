@@ -134,9 +134,11 @@ const { currentUser } = useSelector((state) => state.user);
           </Button>
         </Link>
       ) : (
-        <Link to="/sign-in" className='bg-blue-700 text-white px-2 py-1 rounded-lg content-center'>
-          Lire la suite
-        </Link>
+        <Link to="/sign-in" >
+        <Button gradientDuoTone='blueToBlue' className='bg-blue-600 text-white' rounded outline={true}>
+           Lire la suite
+         </Button>
+       </Link>
       )}
     </>
               

@@ -15,15 +15,17 @@ export default function ActivationPage() {
                 setMessage('Erreur lors de l’activation du compte.');
             }
         };
-        
 
         activateAccount();
     }, [activationcode]);
 
     return (
-        <div>
-            <h1>Activation</h1>
-            <p>{message}</p>
+        <div className='min-h-screen bg-gray-100 flex items-center justify-center'>
+            <div className='bg-white p-8 rounded-lg shadow-lg max-w-md w-full'>
+                <h1 className='text-3xl font-bold mb-4 text-center'>Bienvenue</h1>
+                <p className='text-lg mb-4 text-center'>{message}</p>
+                <a href='/sign-in' className='block text-center text-blue-600 hover:underline'>Se Connecter</a>
+            </div>
         </div>
     );
 }

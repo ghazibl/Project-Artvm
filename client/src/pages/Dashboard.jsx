@@ -23,6 +23,8 @@ import AddFacture from './Facturation/AddFacture';
 import ImprimerFact from './Facturation/ImprimerFact';
 import ListeDevis from './Devis/ListeDevis';
 import CreatePost from './CreatePost';
+import Commandes from './User/ListeCommandes';
+import ListDevis from './User/ListeDevis';
 export default function Dashboard() {
   const location = useLocation();
   const [tab, setTab] = useState('');
@@ -65,6 +67,8 @@ export default function Dashboard() {
       {tab === 'addfacture/:id' && <AddFacture />}
       {tab === 'devis' && <ListeDevis />}
       {tab ==='create-post' && <CreatePost /> }
+      {tab === 'listCommande' && <Commandes/>}
+      {tab === 'listDevis' && <ListDevis/>}
     </div>
   );
 }

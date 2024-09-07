@@ -104,7 +104,7 @@ export default function DashSidebar() {
             </Link>
           )}
               {currentUser.isAdmin && (
-            <Link to='/dashboard?tab=addfacture'>
+            <Link to='/dashboard?tab=addProductAchat'>
               <Sidebar.Item
                 active={tab === 'addfacture'}
                 icon={IoIosAddCircle}

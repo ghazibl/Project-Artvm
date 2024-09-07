@@ -75,41 +75,42 @@ export const signin = async (req, res, next) => {
   }
 };
 
-// Sign in with Google OAuth
 export const google = async (req, res, next) => {
   const { email, name, googlePhotoUrl } = req.body;
   try {
-    const user = await User.findOne({ email });
-    if (user) {
-      const token = jwt.sign(
-        { id: user._id, isAdmin: user.isAdmin },
-        "abc123"
-      );
-      const { password, ...rest } = user._doc;
-      res.status(200).json({ token, ...rest });
-    } else {
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Utilisateur non trouvé, créer un nouvel utilisateur
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
       const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
-      const newUser = new User({
-        username:
-          name.toLowerCase().split(' ').join('') +
-          Math.random().toString(9).slice(-4),
+
+      const username =
+        name.toLowerCase().split(' ').join('') +
+        Math.random().toString(9).slice(-4);
+
+      user = new User({
+        username,
         email,
         password: hashedPassword,
         profilePicture: googlePhotoUrl,
       });
-      await newUser.save();
-      const token = jwt.sign(
-        { id: newUser._id, isAdmin: newUser.isAdmin },
-        "abc123"
-      );
-      const { password, ...rest } = newUser._doc;
-      res.status(200).json({ token, ...rest });
+      user.isActive = true;
+      await user.save();
     }
+
+    // Générer un token JWT
+    const token = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      'abc123'
+    );
+
+    const { password, ...rest } = user._doc;
+    res.status(200).json({ token, ...rest });
   } catch (error) {
-    next(error);
+    next(error); // Passer l'erreur au middleware de gestion des erreurs
   }
 };
  export const verifyUser = async (req, res) => {

@@ -28,7 +28,7 @@ const FactureAchatAdd = ({ updatedProduct }) => {
 
   const calculateTotalPrice = () => {
     const total = products.reduce((acc, product) => {
-      return acc + Number(product.prix) ;
+      return acc + Number(product.prix);
     }, 0);
     const totalWithTva = total + (total * Number(tvaAchat) / 100);
     setTotalPrice(totalWithTva);
@@ -62,32 +62,25 @@ const FactureAchatAdd = ({ updatedProduct }) => {
           },
         }
       );
-  
+
       if (response.status !== 201) {
         throw new Error('Erreur lors de la création de la facture d\'achat');
       }
-  
+
       const { productsNotFound, updatedProduct } = response.data;
-  
+
       setNomFournisseur('');
       setDateAchat('');
       setTvaAchat('');
       setProducts([{ nom: '', prix: '', quantite: '', categorie: '', epaisseur: '' }]);
-  
+
       if (updatedProduct) {
         toast.success("Facture ajoutée avec succès et la quantité du produit modifiée");
       } else {
         toast.success("Facture ajoutée avec succès");
       }
-  
-      if (productsNotFound.length > 0) {
-        toast.info(`La facture a été ajoutée mais les produits suivants ne sont pas disponibles: ${productsNotFound.join(', ')}`);
-      }
-  
-      if (!updatedProduct) {
-        toast.info('Il faut ajouter ce produit');
-      }
-  
+
+    
     } catch (error) {
       toast.error(error.message);
     }

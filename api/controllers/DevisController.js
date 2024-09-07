@@ -1,5 +1,6 @@
 import Devis from '../models/DevisModel.js';
 import Commande from '../models/CommandeModel.js';
+import ProductCart from '../models/ProduitCart.js';
 export const createDevis = async (req, res) => {
   const { ProductInCart, DateCreation, PrixTotal,QuantiteTotals } = req.body;
   const user = req.user;
@@ -21,7 +22,10 @@ export const createDevis = async (req, res) => {
     const savedDevis = await newDevis.save();
     const notificationService = req.app.get('notificationService');
     if (notificationService) {
-      notificationService.emit('DevisCreated', {savedDevis,username: user.username, profilePicture:user.profilePicture} );
+      notificationService.emit('DevisCreated', {DevisId:savedDevis._id,username: user.username, profilePicture:user.profilePicture
+        ,   target: 'admin', 
+        type: 'devis'
+      } );
     } else {
       console.error("NotificationService not found");
     }
@@ -127,22 +131,29 @@ export const GetDevisByUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch devis', error: error.message });
   }
 };
-export const updateDevisUser  = async (req, res) => {
+export const updateDevisUser = async (req, res) => {
   const { devisId } = req.params;
   const { productCart } = req.body;
 
   try {
+    
+    for (const item of productCart) {
+      const { _id, hauteur, largeur, quantite } = item;
+      
+      await ProductCart.findByIdAndUpdate(
+        _id,
+        { hauteur, largeur, quantite },
+        { new: true }
+      );
+    }
 
-    const updatedDevis = await Devis.findByIdAndUpdate(
-      devisId,
-      { productCart },
-      { new: true } 
-    );
+    // Find and return the updated Devis
+    const updatedDevis = await Devis.findById(devisId).populate('productCart');
 
     if (!updatedDevis) {
       return res.status(404).json({ message: 'Devis not found' });
     }
-   
+
     res.status(200).json(updatedDevis);
   } catch (error) {
     console.error('Error updating devis:', error);

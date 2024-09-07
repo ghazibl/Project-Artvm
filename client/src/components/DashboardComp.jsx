@@ -50,7 +50,7 @@ export default function DashboardComp() {
     if (res.ok) {
       setUsers(data.users);
       setTotalUsers(data.totalUsers);
-      setLastMonthUsers(data.lastMonthUsers);
+      setLastMonthUsers(5);
     } else {
       console.error('Failed to fetch users:', data.message);
     }
@@ -395,101 +395,102 @@ export default function DashboardComp() {
       
 {details && (
   <div className="modal-overlay fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-75">
-    <div className="modal-container bg-white w-2/3 p-6 rounded-lg shadow-lg">
+    <div className="modal-container bg-white sm:w-full md:w-4/5 lg:w-3/5 xl:w-2/3 p-6 rounded-lg shadow-lg">
       <div className='flex justify-between items-center mb-4'>
         <h3 className="text-xl font-semibold">Demande par <strong className='text-blue-500'>{details.client.username}</strong></h3>
         <button onClick={() => setDetails(null)} className="text-2xl text-black px-2 py-2 rounded-lg hover:bg-gray-200">
           <IoCloseSharp />
         </button>
       </div>
-      <table className="min-w-full bg-white border h-full border-gray-200">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-6 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Produit</th>
-            <th className="px-6 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Épaisseur</th>
-            <th className="px-6 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Dimension</th>
-            <th className="px-6 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Quantité Commandée</th>
-            <th className="px-6 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Quantité en Stock</th>
-          </tr>
-        </thead>
-        <tbody>
-          {details.productCart.map((item, index) => (
-            <tr key={index} className="border-b border-gray-200">
-              <td className="px-6 py-4 text-sm text-gray-700">{item.product.nom}</td>
-              {item.product.type === 'product' ? (
-                <>
-                  <td className="px-6 py-4 text-sm text-gray-700">{item.product.epaisseur}mm</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{item.hauteur}m x {item.largeur}m</td>
-                </>
-              ) : (
-                <>
-                  <td className="px-6 py-4 text-sm text-gray-700">-</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">-</td>
-                </>
-              )}
-              <td className="px-6 py-4 text-sm text-gray-700">{item.quantite}m</td>
-              <td className="px-6 py-4 text-sm text-gray-700">{item.product.quantite ? item.product.quantite + 'm' : '-'}</td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-200">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Produit</th>
+              <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Épaisseur</th>
+              <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Dimension</th>
+              <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Quantité Commandée</th>
+              <th className="px-4 py-3 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">Quantité en Stock</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {details.productCart.map((item, index) => (
+              <tr key={index} className="border-b border-gray-200">
+                <td className="px-4 py-4 text-sm text-gray-700">{item.product.nom}</td>
+                {item.product.type === 'product' ? (
+                  <>
+                    <td className="px-4 py-4 text-sm text-gray-700">{item.product.epaisseur}mm</td>
+                    <td className="px-4 py-4 text-sm text-gray-700">{item.hauteur}m x {item.largeur}m</td>
+                  </>
+                ) : (
+                  <>
+                    <td className="px-4 py-4 text-sm text-gray-700">-</td>
+                    <td className="px-4 py-4 text-sm text-gray-700">-</td>
+                  </>
+                )}
+                <td className="px-4 py-4 text-sm text-gray-700">{item.quantite}</td>
+                <td className="px-4 py-4 text-sm text-green-700">{item.product.quantite ? item.product.quantite + 'm²' : '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <div className="mt-4">
         <p className="text-sm text-gray-700"><strong>Livraison :</strong> {details.livraison ? 'oui' : 'non'}</p>
         <p className="text-sm text-gray-700"><strong>Adresse :</strong> {details.client.address}</p>
         <p className="text-sm text-gray-700"><strong>Numéro de tel :</strong> {details.client.phoneNumber}</p>
       </div>
-      <div className="flex justify-between mt-8 space-x-4 ">
-        <button className='bg-blue-600 hover:bg-blue-800 text-white  py-2 px-4 rounded' onClick={() => handleConfirme(details._id)}>Confirmer</button>
-        <button className='bg-red-500 hover:bg-red-800 text-white  py-2 px-4 rounded' onClick={() => handleRefuse(details._id)}>Refuser</button>
+      <div className="flex justify-between mt-8 space-x-4">
+        <button className='bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 rounded' onClick={() => handleConfirme(details._id)}>Confirmer</button>
+        <button className='bg-red-500 hover:bg-red-800 text-white py-2 px-4 rounded' onClick={() => handleRefuse(details._id)}>Refuser</button>
       </div>
     </div>
   </div>
 )}
 {detailsDevis && (
   <div className="modal-overlay fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-75">
-    <div className="modal-container bg-white w-2/4  p-6 rounded-lg shadow-lg">
+    <div className="modal-container bg-white sm:w-full md:w-3/4 lg:w-2/3 xl:w-1/2 p-6 rounded-lg shadow-lg">
       <div className='flex justify-between'>
-        <h3 className="text-xl font-semibold mb-4 ">Demande par <strong className='text-green-500'>{detailsDevis.client.username}</strong></h3>
+        <h3 className="text-xl  mb-4"> <strong className='text-green-500 '>{detailsDevis.client.username} </strong> a demander un devis :</h3>
         <button onClick={() => setDetailsDevis(null)} className="btn-primary text-2xl text-black px-2 py-2 rounded-lg"><IoCloseSharp /></button>
       </div>
-      <div>
-      <table className="border-collapse border border-gray-300">
-  <thead>
-    <tr>
-      <th className="border border-gray-300 p-2">Produit</th>
-      <th className="border border-gray-300 p-2">Épaisseur</th>
-      <th className="border border-gray-300 p-2">Hauteur</th>
-      <th className="border border-gray-300 p-2">Largeur</th>
-      
-    </tr>
-  </thead>
-  <tbody>
-    {detailsDevis.productCart.map((item, index) => (
-      <tr key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-        <td className="border border-gray-300 p-2">{item.product.nom}</td>
-        <td className="border border-gray-300 p-2">{item.product.epaisseur}mm</td>
-        <td className="border border-gray-300 p-2">{item.hauteur}m</td>
-        <td className="border border-gray-300 p-2">{item.largeur}m</td>
-        <td className="border border-gray-300 p-2">{item.quantite}m</td>
-        <td className="border border-gray-300 p-2">
-          {item.product.quantite && (
-            <span className='text-green-700 font-semibold'>{item.product.quantite}m</span>
-          )}
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+      <div className="overflow-x-auto">
+        <table className="border-collapse w-full border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border border-gray-300 p-2">Produit</th>
+              <th className="border border-gray-300 p-2">Épaisseur</th>
+              <th className="border border-gray-300 p-2">Hauteur</th>
+              <th className="border border-gray-300 p-2">Largeur</th>
+              <th className="border border-gray-300 p-2">Quantité </th>
+              <th className="border border-gray-300 p-2">Quantité en Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            {detailsDevis.productCart.map((item, index) => (
+              <tr key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                <td className="border border-gray-300 p-2">{item.product.nom}</td>
+                <td className="border border-gray-300 p-2">{item.product.epaisseur}mm</td>
+                <td className="border border-gray-300 p-2">{item.hauteur}m</td>
+                <td className="border border-gray-300 p-2">{item.largeur}m</td>
+                <td className="border border-gray-300 p-2">{item.quantite}</td>
+                <td className="border border-gray-300 p-2">
+                  {item.product.quantite && (
+                    <span className='text-green-700 font-semibold'>{item.product.quantite}m²</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className=" flex justify-center mt-8">
-      <Link to={`/addDevis/${detailsDevis._id}`}
-                className='bg-blue-700 text-white px-4 py-2'
-              >
-                Créer Devis
-              </Link>
+      <div className="flex justify-center mt-8">
+        <Link to={`/addDevis/${detailsDevis._id}`} className='bg-blue-700 text-white px-4 py-2 rounded'>
+          Créer Devis
+        </Link>
       </div>
     </div>
-    </div>
+  </div>
 )}
 
       </div>

@@ -21,12 +21,20 @@ function ListeProduct() {
   const [currentPageLisse, setCurrentPageLisse] = useState(1);
   const productsPerPage = 3;
 
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/products/');
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   useEffect(() => {
-    fetch('http://localhost:3000/api/products/')
-      .then(response => response.json())
-      .then(data => setProducts(data))
-      .catch(error => console.error('Error fetching data:', error));
+    fetchProducts();
   }, []);
+
  
   const handleUpdate = async (productId) => {
     try {
@@ -45,30 +53,36 @@ function ListeProduct() {
       setUpdatedPrice(productToUpdate.prix);
       setUpdatedStatus(productToUpdate.status);
       setIsModalOpen(true);
+      fetchProducts();
     } catch (error) {
       console.error('Error fetching product:', error);
       // Handle error accordingly
     }
   };
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const updatedProduct = {
       id: selectedProduct._id,
-      quantite: updatedQuantity,
+      quantite: updatedStatus === 'Épuisé' ? 0 : updatedQuantity,
       prix: updatedPrice,
       status: updatedStatus
     };
-  
-    axios.put(`http://localhost:3000/api/products/product/${selectedProduct._id}`, updatedProduct)
-      .then(response => {
-        console.log("Product updated successfully:", response.data);
-        handleCancel();
-        toast.success("Produit modifier avec sucess")
-      })
-      .catch(error => {
-        console.error("Error updating product:", error);
-      });
+
+    try {
+      const response = await axios.put(`http://localhost:3000/api/products/product/${selectedProduct._id}`, updatedProduct);
+      console.log("Product updated successfully:", response.data);
+
+      // Update the local state
+      setProducts(products.map(product => 
+        product._id === selectedProduct._id ? { ...selectedProduct, ...updatedProduct } : product
+      ));
+      
+      handleCancel();
+      toast.success("Produit modifié avec succès");
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
   };
   const handleCancel = () => {
     setSelectedProduct(null);
@@ -106,7 +120,7 @@ function ListeProduct() {
         <tr className="hover:bg-gray-100 dark:hover:bg-gray-700">
         <td className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 font-semibold">{product.nom}</td>
         <td className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">{product.epaisseur}mm</td>
-        <td className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">{product.quantite}</td>
+        <td className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">{product.quantite} m²</td>
         <td className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">{product.prix} DT</td>
         
         <td className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${getStatusColor(product.status)}`}>{product.status}</td>
@@ -168,15 +182,15 @@ function ListeProduct() {
             <tr className="bg-blue-100">
               <th scope="col" className="px-6 py-3">Nom</th>
               <th scope="col" className="px-6 py-3">Epaisseur</th>
-              <th scope="col" className="px-6 py-3">Prix</th>
               <th scope="col" className="px-6 py-3">Quantité</th>
+              <th scope="col" className="px-10 py-3">Prix</th>
               <th scope="col" className="px-6 py-3">Status</th>
               <th scope="col" className="px-6 py-3">Action</th>
             </tr>
           </thead>
           {renderProducts(getCurrentProductsChagrin())}
         </table>
-        <div className="flex justify-center space-x-4 py-4">
+        <div className="flex justify-center space-x-4 ">
           <button
             className="bg-green-400 text-white px-3 py-2 rounded hover:bg-green-500"
             onClick={() => setCurrentPageChagrin(currentPageChagrin - 1)}
@@ -196,21 +210,21 @@ function ListeProduct() {
       </div>
       
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mb-8 bg-white p-4">
-        <h3 className="text-xl font-semibold text-center text-blue-700 mb-4">Lisse</h3>
+        <h3 className="text-xl font-semibold text-center text-blue-500 mb-4">Lisse</h3>
         <table className="w-full text-sm text-center text-gray-700 mb-4">
           <thead>
             <tr className="bg-blue-100">
               <th scope="col" className="px-6 py-3">Nom</th>
               <th scope="col" className="px-6 py-3">Epaisseur</th>
-              <th scope="col" className="px-6 py-3">Prix</th>
               <th scope="col" className="px-6 py-3">Quantité</th>
+              <th scope="col" className="px-10 py-3">Prix</th>
               <th scope="col" className="px-6 py-3">Status</th>
               <th scope="col" className="px-6 py-3">Action</th>
             </tr>
           </thead>
           {renderProducts(getCurrentProductsLisse())}
         </table>
-        <div className="flex justify-center space-x-4 py-4">
+        <div className="flex justify-center space-x-4">
           <button
             className="bg-green-400 text-white px-3 py-2 rounded hover:bg-green-500"
             onClick={() => setCurrentPageLisse(currentPageLisse - 1)}
@@ -235,16 +249,16 @@ function ListeProduct() {
             <tr className="bg-blue-100">
               <th scope="col" className="px-6 py-3">Nom</th>
               <th scope="col" className="px-6 py-3">Epaisseur</th>
-              <th scope="col" className="px-6 py-3">Prix</th>
-              
-              <th scope="col" className="px-6 py-3">Status</th>
               <th scope="col" className="px-6 py-3">Quantité</th>
+              
+              <th scope="col" className="px-10 py-3">Prix</th>
+              <th scope="col" className="px-6 py-3">Status</th>
               <th scope="col" className="px-6 py-3">Action</th>
             </tr>
           </thead>
           {renderProducts(getCurrentProductsMiroir())}
         </table>
-        <div className="flex justify-center space-x-4 py-4">
+        <div className="flex justify-center space-x-4 py-0">
           <button
             className="bg-green-400  text-white px-3 py-2 rounded hover:bg-green-800"
             onClick={() => setCurrentPageMiroir(currentPageMiroir - 1)}
@@ -320,10 +334,10 @@ function ListeProduct() {
       </div>
       <img src={productDetails.image} alt={productDetails.nom} className="w-full h-auto mt-4" />
       <div >
-      <p ><strong className="  text-blue-700 ">Catégorie: </strong> {productDetails.categorie}</p>
-        <p><strong className="  text-blue-700 ">Epaisseur:</strong> {productDetails.epaisseur} mm</p>
-        <p><strong className="  text-blue-700 ">Description:</strong>  {productDetails.description}</p>
-        <p><strong className="  text-blue-700 ">Prix: </strong> {productDetails.prix} DT</p>
+      <p ><strong className="text-blue-700 ">Catégorie: </strong> {productDetails.categorie}</p>
+        <p><strong className="text-blue-700 ">Epaisseur:</strong> {productDetails.epaisseur} mm</p>
+        <p><strong className="text-blue-700 ">Description:</strong>  {productDetails.description}</p>
+        <p><strong className="text-blue-700 ">Prix: </strong> {productDetails.prix} DT</p>
         <div className='flex justify-between'>
         <p><strong className="  text-blue-700 ">Quantité:</strong>  {productDetails.quantite} m</p>
         <td className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${getStatusColor(productDetails.status)}`}>{productDetails.status}</td>

@@ -5,6 +5,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { FaShoppingCart } from "react-icons/fa";
 import User from '../../../../api/models/user.model';
 import { TiDelete } from "react-icons/ti";
+import { Navigate } from 'react-router-dom';
+
 const Cart = () => {
   const [ProductIncart, setProductInCart] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,72 +173,76 @@ const handleCloseModal = () => {
   setModalIsOpen(false);
 };
 const handleCommande = async () => {
- console.log('Commande');
- const token = localStorage.getItem('token');
- const User = JSON.parse(localStorage.getItem('user'));
+  console.log('Commande');
+  const token = localStorage.getItem('token');
+  const User = JSON.parse(localStorage.getItem('user'));
 
- const productCart = ProductIncart.map(item => ({
-   _id: item._id,
-   product: item.product,
-   hauteur: item.hauteur,
-   largeur: item.largeur,
-   quantite: item.quantite,
- }));
+  // Create the product cart details
+  const productCart = ProductIncart.map(item => ({
+    _id: item._id,
+    product: item.product,
+    hauteur: item.hauteur,
+    largeur: item.largeur,
+    quantite: item.quantite,
+  }));
 
- const requestBody = {
-   ProductInCart: productCart,
-   QuentiteTotals: ProductIncart.reduce((total, item) => total + item.quantite, 0),
-   Client :User.userId,
-   livraison,
-   prixTotale: totalPrice,
-   status: 'En attente',
- };
+  // Create the request body for the order
+  const requestBody = {
+    ProductInCart: productCart,
+    QuentiteTotals: ProductIncart.reduce((total, item) => total + item.quantite, 0),
+    Client: User.userId,
+    livraison,
+    prixTotale: totalPrice,
+    status: 'En attente',
+  };
 
- console.log('Request Body:', requestBody); // Log the request body to ensure it is correct
+  console.log('Request Body:', requestBody); // Log the request body to ensure it is correct
 
- try {
-   const response = await axios.post(
-     'http://localhost:3000/api/commande/create',
-     requestBody,
-     {
-       headers: {
-         Authorization: `Bearer ${token}`,
-       },
-     }
-   );
+  try {
+    // Send the order request
+    const response = await axios.post(
+      'http://localhost:3000/api/commande/create',
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-   if (response.status === 201) {
-     console.log('Order placed successfully:', response.data);
-     toast.success("Commande envoyer avec succès");
+    if (response.status === 201) {
+      console.log('Order placed successfully:', response.data);
+      toast.success("Commande envoyée avec succès");
 
-     const deleteResponse = await axios.delete(`http://localhost:3000/api/cart/${cart._id}`, {
-       headers: {
-         Authorization: `Bearer ${token}`,
-       },
-     });
+      const deleteResponse = await axios.delete(`http://localhost:3000/api/cart/${cart._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-     if (deleteResponse.status === 200) {
-       console.log('Cart cleared successfully:', deleteResponse.data);
-       setProductInCart([]);
-       setCart("");
-       localStorage.removeItem('cart');
-       handleCloseModal();
-     } else {
-       console.error('Failed to clear cart:', deleteResponse.data.message);
-     }
-   } else {
-     console.error('Failed to place order:', response.data.message);
-   }
- } catch (error) {
-   console.error('Error during order placement:', error);
- }
+      if (deleteResponse.status === 200) {
+        console.log('Cart cleared successfully:', deleteResponse.data);
+        setProductInCart([]);
+        setCart("");
+        localStorage.removeItem('cart');
+        handleCloseModal();
+        Navigate('/dashboard?tab=dashUser');
+      } else {
+        console.error('Failed to clear cart:', deleteResponse.data.message);
+      }
+    } else {
+      console.error('Failed to place order:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error during order placement:', error);
+  }
 };
+
 const handleOpenModal = async () => {
   const token = localStorage.getItem('token');
   const User = JSON.parse(localStorage.getItem('user'));
   console.log(User);
 
-  // Fetch the user profile
   try {
     const userResponse = await axios.get(`http://localhost:3000/api/user/${User.userId}`, {
       headers: {
@@ -247,24 +253,25 @@ const handleOpenModal = async () => {
     const user = userResponse.data;
     let { phoneNumber, address } = user;
 
+    // Check if phone number and address are available
     if (!phoneNumber || !address) {
       setModalIsOpen(true);
       setPhoneNumber(phoneNumber || '');
       setAddress(address || '');
       return;
     }
-
     handleCommande(); 
   } catch (error) {
     console.error('Error fetching user profile:', error);
   }
 };
 
-
+// Function to update user details and then place the order
 const handleUpdateUserAndPlaceOrder = async () => {
   const token = localStorage.getItem('token');
   const User = JSON.parse(localStorage.getItem('user'));
   console.log(User);
+
   try {
     const response = await axios.put(
       `http://localhost:3000/api/user/profile/${User.userId}`,
@@ -278,12 +285,13 @@ const handleUpdateUserAndPlaceOrder = async () => {
         },
       }
     );
-
+console.log(response);
     if (response.status === 200) {
       console.log('User updated successfully:', response.data);
       toast.success("User details updated successfully");
       
-      handleCommande(); 
+      handleCommande();
+      
     } else {
       console.error('Failed to update user:', response.data.message);
     }
@@ -412,7 +420,7 @@ const handleUpdateUserAndPlaceOrder = async () => {
               type="submit"
               className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              Confirmer
+              Enregistrer
             </button>
           </div>
         </form>

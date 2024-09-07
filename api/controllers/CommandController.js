@@ -49,10 +49,8 @@ const updateCommande = async (req, res) => {
 };
 
 const createCommande = async (req, res) => {
-  const { ProductInCart, QuentiteTotals,prixTotale,livraison, status } = req.body;
+  const { ProductInCart, QuentiteTotals, prixTotale, livraison, status } = req.body;
   const user = req.user;
-  console.log("user", user);
-  console.log(ProductInCart);
 
   try {
     if (!ProductInCart || !QuentiteTotals || !status) {
@@ -63,7 +61,6 @@ const createCommande = async (req, res) => {
       productCart: ProductInCart,
       client: user.userId,
       QuentiteTotals,
-     
       prixTotale,
       livraison,
       status,
@@ -73,8 +70,14 @@ const createCommande = async (req, res) => {
 
     const notificationService = req.app.get('notificationService');
     if (notificationService) {
-      notificationService.emit('commandeCreated', {savedCommande,username: user.username, profilePicture:user.profilePicture} );
-     
+      notificationService.emit('commandeCreated', {
+        commandeId: savedCommande._id,
+        UserId: user.userId,
+        username: user.username,
+        profilePicture: user.profilePicture,
+        target: 'admin', // Notification pour les administrateurs
+        type: 'commande'
+      });
     } else {
       console.error("NotificationService not found");
     }
@@ -82,11 +85,10 @@ const createCommande = async (req, res) => {
     res.status(201).json(savedCommande);
   } catch (error) {
     console.error("Error creating order:", error);
-    res
-      .status(400)
-      .json({ message: "Failed to create order", error: error.message });
+    res.status(400).json({ message: "Failed to create order", error: error.message });
   }
 };
+
 export const getCommandesByUser = async (req, res) => {
   try {
     const user = req.user;
@@ -263,13 +265,14 @@ const updateCommandStatus = async (req, res) => {
 };
 const setStatusConfirme = async (req, res) => {
   const { id } = req.params;
+  
   try {
-    // Update command status to "confirmé"
+    // Mettre à jour le statut de la commande en "confirmé"
     const updatedCommand = await Commande.findByIdAndUpdate(
       id,
-      { Status: "confirmé" }, // Ensure the status field is lowercase
+      { Status: "confirmé" },
       { new: true }
-    ).lean();
+    ).populate('client').lean();
 
     if (!updatedCommand) {
       return res.status(404).json({ success: false, message: "Command not found" });
@@ -277,17 +280,26 @@ const setStatusConfirme = async (req, res) => {
 
     const notificationService = req.app.get('notificationService');
     if (notificationService) {
-      notificationService.emit('commandeConfirmée', {updatedCommand});
+      // Envoyer la notification
+      notificationService.emit('commandeConfirmée', {
+        commandeId: updatedCommand._id,
+        UserId: updatedCommand.client._id,  // Assurez-vous que client._id est l'ID de l'utilisateur
+        target: 'user', // Notification pour l'utilisateur
+        type: 'commande'
+      });
     } else {
       console.error("NotificationService not found");
     }
 
+    // Répondre avec succès
     res.status(200).json({
       success: true,
       message: 'Command status updated to "confirmé"',
       command: updatedCommand,
     });
   } catch (error) {
+    // Gérer les erreurs
+    console.error('Failed to update command status to "confirmé":', error);
     res.status(500).json({
       success: false,
       message: 'Failed to update command status to "confirmé"',
